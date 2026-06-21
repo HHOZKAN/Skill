@@ -109,6 +109,7 @@ export default function App() {
                 node={node}
                 onBack={() => navigate({ view: 'tree', treeId: tree.id })}
                 onSave={(nodeId, data) => setNotes(tree.id, nodeId, data)}
+                onRename={(nodeId, name) => renameNode(tree.id, nodeId, name)}
               />
             </motion.div>
           );

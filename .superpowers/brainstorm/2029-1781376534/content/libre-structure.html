@@ -1,0 +1,119 @@
+<h2>Qu'est-ce que "libre et structuré" pour toi ?</h2>
+<p class="subtitle">Deux façons très différentes de combiner les deux — clique sur celle qui correspond à ta vision</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="blocks" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d1117;padding:16px 18px;border-radius:8px 8px 0 0;min-height:200px;">
+      <!-- Block editor mockup -->
+      <div style="color:#8b949e;font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;">React — mes notes</div>
+
+      <!-- H1 block -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;padding:4px 6px;border-radius:4px;background:rgba(255,255,255,0.03);">
+        <span style="color:#30363d;font-size:10px;width:16px;">H1</span>
+        <span style="color:#e6edf3;font-size:16px;font-weight:700;">Hooks essentiels</span>
+      </div>
+
+      <!-- text block -->
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;padding:4px 6px;border-radius:4px;">
+        <span style="color:#30363d;font-size:10px;width:16px;margin-top:2px;">¶</span>
+        <span style="color:#c9d1d9;font-size:12px;line-height:1.6;">useState retourne un tableau — la valeur et son setter. À utiliser pour tout état local au composant.</span>
+      </div>
+
+      <!-- callout block -->
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;padding:6px 8px;border-radius:4px;background:#1c2a1c;border-left:3px solid #238636;">
+        <span style="font-size:12px;">💡</span>
+        <span style="color:#7ee787;font-size:11px;">Penser à : les dépendances de useEffect contrôlent quand il se re-déclenche</span>
+      </div>
+
+      <!-- bullet list -->
+      <div style="padding:4px 6px;border-radius:4px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span style="color:#30363d;font-size:10px;width:16px;">•</span>
+          <span style="color:#c9d1d9;font-size:12px;">useState — état local</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span style="color:#30363d;font-size:10px;width:16px;">•</span>
+          <span style="color:#c9d1d9;font-size:12px;">useEffect — effets de bord</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="color:#30363d;font-size:10px;width:16px;">•</span>
+          <span style="color:#c9d1d9;font-size:12px;">useCallback — mémoïsation</span>
+        </div>
+      </div>
+
+      <!-- add block hint -->
+      <div style="margin-top:10px;padding:4px 6px;color:#30363d;font-size:11px;display:flex;align-items:center;gap:6px;">
+        <span style="border:1px solid #30363d;border-radius:3px;padding:0 4px;font-size:10px;">+</span> Ajouter un bloc...
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Éditeur par blocs</h3>
+      <p><strong>Structuré verticalement</strong>, libre dans le contenu. Tu tapes du texte, tu insères des titres, listes, callouts, code. Comme Notion. Chaque bloc se réordonne par glisser-déposer.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="spatial" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#080d1a;padding:0;border-radius:8px 8px 0 0;position:relative;min-height:200px;overflow:hidden;">
+      <svg width="100%" height="200" style="display:block;">
+        <!-- grid subtile -->
+        <defs>
+          <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+            <path d="M 24 0 L 0 0 0 24" fill="none" stroke="rgba(180,200,255,0.04)" stroke-width="1"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid)"/>
+
+        <!-- carte sticky 1 -->
+        <g transform="translate(12, 14)">
+          <rect width="140" height="80" rx="6" fill="#1a2236" stroke="rgba(107,163,245,0.2)" stroke-width="1"/>
+          <text x="10" y="22" fill="#79c0ff" font-size="10" font-weight="700" font-family="system-ui">useState</text>
+          <text x="10" y="38" fill="#c9d1d9" font-size="9" font-family="system-ui">Retourne [valeur, setter]</text>
+          <text x="10" y="52" fill="#c9d1d9" font-size="9" font-family="system-ui">→ déclenche un re-render</text>
+          <rect x="10" y="62" width="40" height="10" rx="3" fill="#1f6feb33" stroke="#1f6feb55" stroke-width="1"/>
+          <text x="14" y="70" fill="#79c0ff" font-size="8" font-family="system-ui">état</text>
+        </g>
+
+        <!-- flèche -->
+        <path d="M 155 60 Q 170 60 175 60" stroke="rgba(107,163,245,0.4)" stroke-width="1.5" fill="none" marker-end="url(#arr2)"/>
+        <defs><marker id="arr2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="rgba(107,163,245,0.5)"/></marker></defs>
+
+        <!-- carte sticky 2 -->
+        <g transform="translate(178, 30)">
+          <rect width="120" height="60" rx="6" fill="#1a2236" stroke="rgba(107,163,245,0.2)" stroke-width="1"/>
+          <text x="10" y="20" fill="#79c0ff" font-size="10" font-weight="700" font-family="system-ui">useEffect</text>
+          <text x="10" y="35" fill="#c9d1d9" font-size="9" font-family="system-ui">Se run après render</text>
+          <text x="10" y="48" fill="#c9d1d9" font-size="9" font-family="system-ui">Cleanup requis !</text>
+        </g>
+
+        <!-- dessin libre -->
+        <path d="M 30 140 Q 60 120 90 135 Q 120 150 150 130 Q 180 110 210 125" stroke="#6ba3f580" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+        <!-- note texte flottante -->
+        <g transform="translate(30, 155)">
+          <text fill="#8ba8d8" font-size="10" font-family="system-ui">⚠️ Ne pas oublier les dépendances</text>
+        </g>
+
+        <!-- sticky 3, légèrement rotaté -->
+        <g transform="translate(185,120) rotate(-2)">
+          <rect width="100" height="55" rx="6" fill="#2a1a36" stroke="rgba(180,100,245,0.25)" stroke-width="1"/>
+          <text x="8" y="18" fill="#c084fc" font-size="10" font-weight="700" font-family="system-ui">useCallback</text>
+          <text x="8" y="32" fill="#c9d1d9" font-size="9" font-family="system-ui">Mémoïse la fn</text>
+          <text x="8" y="45" fill="#c9d1d9" font-size="9" font-family="system-ui">évite les re-renders</text>
+        </g>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>B — Canvas spatial avec cartes</h3>
+      <p><strong>Libre spatialement</strong>, structuré par cartes. Tu poses des cartes où tu veux, tu les relies par des flèches, tu dessines librement entre elles. Chaque carte a un titre + texte riche.</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="section" style="margin-top:20px;background:rgba(107,163,245,0.06);border:1px solid rgba(107,163,245,0.12);border-radius:8px;padding:14px 16px;">
+  <p style="color:#8b949e;font-size:12px;margin:0;line-height:1.6;">
+    <strong style="color:#c9d1d9;">A</strong> = liberté dans le contenu, ordre vertical. Idéal pour des notes denses, du texte formaté, du code.<br/>
+    <strong style="color:#c9d1d9;">B</strong> = liberté spatiale, idées en réseau. Idéal pour relier des concepts, schématiser, pensée visuelle.
+  </p>
+</div>

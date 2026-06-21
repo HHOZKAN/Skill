@@ -14,24 +14,10 @@ export interface ConstellationLink {
   to: string;
 }
 
-export interface NoteStroke {
-  id: string;
-  color: string;
-  width: number;
-  points: { x: number; y: number }[];
-}
-
-export interface NoteText {
-  id: string;
-  x: number;
-  y: number;
-  content: string;
-  color: string;
-}
+import type { JSONContent } from '@tiptap/react';
 
 export interface NoteData {
-  texts: NoteText[];
-  strokes: NoteStroke[];
+  content: JSONContent | null;
 }
 
 export interface Tree {

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Design — Notes fond blanc</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #060a14; font-family: system-ui, sans-serif; min-height: 100vh; padding: 24px 16px; }
+
+  .frame {
+    width: 100%; max-width: 860px; margin: 0 auto;
+    border: 1px solid rgba(107,163,245,0.15); border-radius: 12px;
+    overflow: hidden; box-shadow: 0 0 60px rgba(107,163,245,0.06);
+  }
+
+  /* Header sombre — reste dans le thème de l'app */
+  .note-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 20px;
+    background: #0d1117;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .back-btn {
+    width: 30px; height: 30px; border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03); color: #8b949e;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; cursor: pointer; flex-shrink: 0;
+  }
+  .node-info { display: flex; align-items: center; gap: 10px; flex: 1; }
+  .node-dot { width: 9px; height: 9px; border-radius: 50%; background: #2a6fdb; box-shadow: 0 0 8px #2a6fdb88; }
+  .node-name { font-size: 15px; font-weight: 600; color: #e6edf3; }
+  .state-badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 20px;
+    background: rgba(42,111,219,0.15); border: 1px solid rgba(42,111,219,0.3);
+    color: #79c0ff; letter-spacing: .04em;
+  }
+  .h-btn {
+    padding: 4px 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03); color: #8b949e; font-size: 11px;
+  }
+
+  /* Editor — fond blanc */
+  .editor-wrap {
+    background: #ffffff;
+    min-height: 480px;
+    position: relative;
+  }
+
+  .editor-content {
+    padding: 40px 56px 60px;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .b-h1 { font-size: 26px; font-weight: 700; color: #111827; margin-bottom: 6px; letter-spacing: -.3px; }
+  .b-h2 { font-size: 18px; font-weight: 600; color: #1f2937; margin-bottom: 6px; margin-top: 24px; }
+  .b-text { font-size: 14.5px; line-height: 1.8; color: #374151; margin-bottom: 4px; }
+  .b-text strong { color: #111827; }
+  .b-text code {
+    background: #f3f4f6; padding: 1px 5px; border-radius: 4px;
+    font-family: monospace; font-size: 12.5px; color: #059669;
+    border: 1px solid #e5e7eb;
+  }
+
+  .b-bullet { display: flex; gap: 10px; font-size: 14.5px; line-height: 1.8; color: #374151; padding-left: 4px; margin-bottom: 2px; }
+  .b-bullet::before { content: "•"; color: #9ca3af; flex-shrink: 0; }
+
+  .b-todo { display: flex; gap: 10px; align-items: flex-start; font-size: 14.5px; line-height: 1.8; color: #374151; padding-left: 4px; margin-bottom: 2px; }
+  .b-todo-box {
+    width: 15px; height: 15px; border: 1.5px solid #d1d5db; border-radius: 3px;
+    flex-shrink: 0; margin-top: 4px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .b-todo-box.done { background: #2a6fdb; border-color: #2a6fdb; }
+  .b-todo-box.done::after { content: "✓"; color: white; font-size: 9px; }
+  .b-todo.done span { text-decoration: line-through; color: #9ca3af; }
+
+  .b-code {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+    padding: 14px 18px; font-family: monospace; font-size: 13px; color: #1e293b;
+    line-height: 1.7; margin: 10px 0;
+  }
+  .b-code .lang { color: #94a3b8; font-size: 10px; margin-bottom: 6px; font-family: system-ui; text-transform: uppercase; letter-spacing: .06em; }
+  .kw { color: #7c3aed; }
+  .fn { color: #0369a1; }
+  .str { color: #059669; }
+
+  .b-callout {
+    display: flex; gap: 10px;
+    background: #fffbeb; border-left: 3px solid #f59e0b; border-radius: 0 8px 8px 0;
+    padding: 10px 14px; margin: 10px 0; font-size: 13.5px; color: #92400e; line-height: 1.6;
+  }
+  .b-callout.info { background: #eff6ff; border-color: #2a6fdb; color: #1e3a5f; }
+
+  .b-quote {
+    border-left: 3px solid #e5e7eb; padding: 4px 16px;
+    color: #6b7280; font-size: 14.5px; line-height: 1.75; font-style: italic; margin: 8px 0;
+  }
+
+  .b-divider { border: none; border-top: 1px solid #f3f4f6; margin: 20px 0; }
+
+  /* Cursor */
+  .cursor { display: inline-block; width: 2px; height: 15px; background: #2a6fdb; margin-left: 1px; vertical-align: middle; animation: blink 1s step-end infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* Slash menu */
+  .slash-menu {
+    position: absolute; left: 200px; top: 300px;
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+    padding: 6px 0; width: 240px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+    z-index: 100;
+  }
+  .sm-label { padding: 4px 12px; font-size: 10px; color: #9ca3af; letter-spacing: .08em; text-transform: uppercase; }
+  .sm-item { display: flex; align-items: center; gap: 10px; padding: 6px 12px; cursor: pointer; font-size: 13px; color: #374151; }
+  .sm-item.active { background: #f0f6ff; }
+  .sm-item-icon {
+    width: 28px; height: 28px; border-radius: 6px;
+    background: #f3f4f6; border: 1px solid #e5e7eb;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; flex-shrink: 0; color: #374151;
+  }
+  .sm-item.active .sm-item-icon { background: #dbeafe; border-color: #bfdbfe; }
+  .sm-item-text h4 { font-size: 12.5px; font-weight: 500; }
+  .sm-item-text p { font-size: 10.5px; color: #9ca3af; margin-top: 1px; }
+
+  /* Bubble menu */
+  .bubble-menu {
+    position: absolute; top: 108px; left: 175px;
+    background: #1f2937; border-radius: 8px; padding: 4px;
+    display: flex; gap: 2px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  }
+  .bm-btn { padding: 4px 8px; border-radius: 4px; border: none; background: none; color: #d1d5db; font-size: 12px; cursor: pointer; min-width: 28px; }
+  .bm-btn.active { background: #2a6fdb; color: white; }
+  .bm-sep { width: 1px; background: #374151; margin: 3px 2px; }
+
+  /* Footer */
+  .note-footer {
+    background: #fafafa; border-top: 1px solid #f3f4f6;
+    padding: 9px 20px; text-align: center;
+    font-size: 11px; color: #9ca3af;
+  }
+  kbd {
+    background: #f3f4f6; border: 1px solid #e5e7eb;
+    padding: 1px 5px; border-radius: 3px; color: #374151; font-size: 10px;
+  }
+
+  .annotation {
+    position: absolute; font-size: 10px; color: #9ca3af;
+    border: 1px dashed #d1d5db; border-radius: 4px;
+    padding: 3px 7px; background: #fafafa; pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<h2 style="font-size:14px;font-weight:600;color:#e6edf3;margin-bottom:4px;">Design — Notes fond blanc</h2>
+<p style="font-size:12px;color:#6e7681;margin-bottom:20px;">Header sombre (thème app) + éditeur blanc (clarté de lecture)</p>
+
+<div class="frame">
+
+  <!-- Header sombre -->
+  <div class="note-header">
+    <div class="back-btn">←</div>
+    <div class="node-info">
+      <div class="node-dot"></div>
+      <div class="node-name">React</div>
+      <div class="state-badge">En cours</div>
+    </div>
+    <div class="h-btn">⌘Z</div>
+  </div>
+
+  <!-- Éditeur blanc -->
+  <div class="editor-wrap">
+    <div class="editor-content">
+
+      <div class="b-h1">Hooks React — Notes</div>
+
+      <div class="b-text" style="margin-bottom:16px;color:#6b7280;font-size:13px;">13 juin 2025</div>
+
+      <div class="b-text">Les hooks permettent d'utiliser l'état et d'autres fonctionnalités de React sans écrire de classe.</div>
+
+      <div class="b-h2">État local</div>
+
+      <div class="b-text"><strong>useState</strong> retourne un tableau — <code>[valeur, setter]</code>. Chaque appel au setter déclenche un re-render.</div>
+
+      <div class="b-code">
+        <div class="lang">javascript</div>
+        <span class="kw">const</span> [count, setCount] = <span class="fn">useState</span>(<span class="str">0</span>);<br/>
+        <span class="kw">const</span> [user, setUser] = <span class="fn">useState</span>(<span class="kw">null</span>);
+      </div>
+
+      <div class="b-callout info">
+        💡 Le setter est stable entre les renders — pas besoin de le mettre dans les dépendances useEffect.
+      </div>
+
+      <div class="b-h2">Effets de bord</div>
+
+      <div class="b-bullet">Se lance après chaque render (par défaut)</div>
+      <div class="b-bullet">Le tableau de dépendances contrôle les re-runs</div>
+      <div class="b-bullet">Retourner une fonction = cleanup automatique</div>
+
+      <hr class="b-divider"/>
+
+      <div class="b-quote">« Chaque render est un snapshot — les effets voient la valeur au moment du render. »</div>
+
+      <div class="b-h2">À faire</div>
+
+      <div class="b-todo"><div class="b-todo-box done"></div><span>Comprendre la règle des hooks</span></div>
+      <div class="b-todo"><div class="b-todo-box"></div><span>Pratiquer useCallback et useMemo</span></div>
+      <div class="b-todo"><div class="b-todo-box"></div><span>Lire la doc sur les custom hooks<span class="cursor"></span></span></div>
+
+    </div>
+
+    <!-- Bubble menu -->
+    <div class="bubble-menu">
+      <button class="bm-btn active">B</button>
+      <button class="bm-btn" style="font-style:italic">I</button>
+      <button class="bm-btn" style="text-decoration:underline;font-size:11px">U</button>
+      <div class="bm-sep"></div>
+      <button class="bm-btn" style="font-family:monospace;font-size:11px">`</button>
+      <div class="bm-sep"></div>
+      <button class="bm-btn" style="font-size:10px">H1</button>
+      <button class="bm-btn" style="font-size:10px">H2</button>
+    </div>
+
+    <!-- Slash menu -->
+    <div class="slash-menu">
+      <div class="sm-label">Blocs</div>
+      <div class="sm-item active">
+        <div class="sm-item-icon" style="font-weight:700;font-size:11px">H1</div>
+        <div class="sm-item-text"><h4>Titre</h4><p>Grand titre de section</p></div>
+      </div>
+      <div class="sm-item">
+        <div class="sm-item-icon">•</div>
+        <div class="sm-item-text"><h4>Liste à puces</h4><p>Énumération simple</p></div>
+      </div>
+      <div class="sm-item">
+        <div class="sm-item-icon">☑</div>
+        <div class="sm-item-text"><h4>Case à cocher</h4><p>Todo, exercice à faire</p></div>
+      </div>
+      <div class="sm-item">
+        <div class="sm-item-icon" style="font-size:10px">&lt;/&gt;</div>
+        <div class="sm-item-text"><h4>Code</h4><p>Bloc de code coloré</p></div>
+      </div>
+      <div class="sm-item">
+        <div class="sm-item-icon">💡</div>
+        <div class="sm-item-text"><h4>Callout</h4><p>Point clé à retenir</p></div>
+      </div>
+    </div>
+
+    <div class="annotation" style="right:14px;top:14px;">① Bubble menu (sélection)</div>
+    <div class="annotation" style="right:14px;top:38px;">② Slash menu ( / )</div>
+  </div>
+
+  <div class="note-footer">
+    Tape <kbd>/</kbd> pour insérer un bloc · <kbd>⌘Z</kbd> pour annuler · <kbd>Échap</kbd> pour revenir
+  </div>
+
+</div>
+
+<script>
+document.querySelectorAll('.sm-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.sm-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+document.querySelectorAll('.b-todo-box').forEach(box => {
+  box.addEventListener('click', () => {
+    box.classList.toggle('done');
+    const todo = box.parentElement;
+    todo.classList.toggle('done');
+  });
+});
+</script>
+</body>
+</html>

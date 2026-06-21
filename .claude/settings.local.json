@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash \"C:/Users/boulanger/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/3e02ee07-34f5-4889-90e5-62848aa92c4f/7567d482-52b7-41aa-941c-33774d2d3c50/skills/brainstorming/scripts/start-server.sh\" --project-dir \"C:/Users/boulanger/PycharmProjects/Skill\")",
+      "Bash(rtk read *)",
+      "Bash(rtk git *)",
+      "Bash(rtk git commit -m ' *)",
+      "Bash(bash \"C:/Users/boulanger/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/3e02ee07-34f5-4889-90e5-62848aa92c4f/7567d482-52b7-41aa-941c-33774d2d3c50/skills/brainstorming/scripts/stop-server.sh\" \"C:/Users/boulanger/PycharmProjects/Skill/.superpowers/brainstorm/2029-1781376534\")",
+      "Bash(npm install *)",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(JSON.stringify\\(Object.fromEntries\\(Object.entries\\(p.dependencies\\).filter\\(\\([k]\\)=>k.includes\\('tiptap'\\)||k==='lowlight'\\)\\),null,2\\)\\)\")",
+      "Bash(node -e \"const m=require\\('@tiptap/react'\\); console.log\\(Object.keys\\(m\\).sort\\(\\).join\\(', '\\)\\)\")",
+      "Bash(rtk ls *)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const p=JSON.parse\\(d\\);console.log\\('version',p.version\\)}\\)\")",
+      "Bash(node -e \"const m=require\\('@tiptap/react/menus'\\); console.log\\(Object.keys\\(m\\).sort\\(\\).join\\(', '\\)\\)\")",
+      "Bash(rtk grep *)",
+      "Bash(node -e \"const m=require\\('@tiptap/extensions'\\); console.log\\(Object.keys\\(m\\).sort\\(\\).join\\(', '\\)\\)\")",
+      "Bash(node -e \"const m=require\\('@tiptap/extension-placeholder'\\); console.log\\('placeholder exports:', Object.keys\\(m\\).join\\(', '\\)\\)\")",
+      "Bash(node -e \"const m=require\\('@tiptap/extension-code-block-lowlight'\\); console.log\\('lowlight ext:', Object.keys\\(m\\).join\\(', '\\)\\)\")",
+      "Bash(node -e \"const m=require\\('@tiptap/extension-task-item'\\); console.log\\('taskitem:', Object.keys\\(m\\).join\\(', '\\)\\)\")",
+      "Bash(rtk npm *)",
+      "Bash(rtk curl *)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(npm view *)",
+      "Bash(node -e \"const m=require\\('@tiptap/extension-drag-handle-react'\\); console.log\\('exports:', Object.keys\\(m\\)\\);\")",
+      "Bash(node -e \"const m=require\\('@tiptap/extension-drag-handle'\\); console.log\\('exports:', Object.keys\\(m\\)\\);\")",
+      "Bash(xargs cat)",
+      "Bash(rtk tsc *)"
+    ]
+  }
+}

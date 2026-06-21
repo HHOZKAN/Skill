@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Design — Nouvelle page de notes</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #060a14; color: #c9d1d9; font-family: system-ui, sans-serif; min-height: 100vh; }
+
+  .frame {
+    width: 100%;
+    max-width: 860px;
+    margin: 0 auto;
+    border: 1px solid rgba(107,163,245,0.15);
+    border-radius: 12px;
+    overflow: hidden;
+    background: #0a0f1e;
+    box-shadow: 0 0 60px rgba(107,163,245,0.06);
+  }
+
+  /* Header */
+  .note-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    background: #0d1117;
+  }
+  .back-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    background: rgba(255,255,255,0.03);
+    color: #8b949e;
+    font-size: 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .node-info { display: flex; align-items: center; gap: 10px; flex: 1; }
+  .node-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: #2a6fdb;
+    box-shadow: 0 0 8px #2a6fdb88;
+    flex-shrink: 0;
+  }
+  .node-name { font-size: 15px; font-weight: 600; color: #e6edf3; }
+  .state-badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 20px;
+    background: rgba(42,111,219,0.15); border: 1px solid rgba(42,111,219,0.3);
+    color: #79c0ff; letter-spacing: .04em;
+  }
+  .header-actions { display: flex; gap: 6px; }
+  .h-btn {
+    padding: 4px 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03); color: #8b949e; font-size: 11px; cursor: pointer;
+  }
+
+  /* Editor area */
+  .editor-wrap {
+    display: flex;
+    min-height: 480px;
+  }
+
+  /* Sidebar numéros de blocs (optionnel, subtil) */
+  .line-nums {
+    width: 40px;
+    padding-top: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0;
+    border-right: 1px solid rgba(255,255,255,0.04);
+  }
+
+  /* Editor content */
+  .editor-content {
+    flex: 1;
+    padding: 28px 40px 48px;
+    max-width: 680px;
+  }
+
+  .block { margin-bottom: 6px; }
+
+  .b-h1 { font-size: 22px; font-weight: 700; color: #e6edf3; margin-bottom: 12px; margin-top: 4px; }
+  .b-h2 { font-size: 17px; font-weight: 600; color: #e6edf3; margin-bottom: 8px; margin-top: 16px; }
+  .b-text { font-size: 14px; line-height: 1.75; color: #c9d1d9; }
+  .b-text strong { color: #e6edf3; }
+  .b-text code { background: #21262d; padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #7ee787; }
+
+  .b-bullet { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.7; color: #c9d1d9; padding-left: 8px; }
+  .b-bullet::before { content: "•"; color: #4d6fa0; flex-shrink: 0; margin-top: 1px; }
+
+  .b-todo { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.7; color: #c9d1d9; padding-left: 8px; }
+  .b-todo-box {
+    width: 15px; height: 15px; border: 1.5px solid #4d6fa0; border-radius: 3px;
+    flex-shrink: 0; margin-top: 3px; display: flex; align-items: center; justify-content: center;
+  }
+  .b-todo-box.done { background: #238636; border-color: #238636; }
+  .b-todo-box.done::after { content: "✓"; color: white; font-size: 9px; }
+  .b-todo.done span { text-decoration: line-through; color: #6e7681; }
+
+  .b-code {
+    background: #161b22; border: 1px solid #21262d; border-radius: 6px;
+    padding: 12px 16px; font-family: monospace; font-size: 12px; color: #7ee787;
+    line-height: 1.6; margin: 8px 0;
+  }
+  .b-code .lang { color: #8b949e; font-size: 10px; margin-bottom: 6px; font-family: system-ui; }
+
+  .b-callout {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: #1c2a1c; border-left: 3px solid #238636; border-radius: 0 6px 6px 0;
+    padding: 10px 14px; margin: 8px 0; font-size: 13px; color: #7ee787; line-height: 1.6;
+  }
+  .b-callout.warn { background: #2a1c1c; border-color: #da3633; color: #f85149; }
+  .b-callout.info { background: #1c1e2a; border-color: #1f6feb; color: #79c0ff; }
+
+  .b-quote {
+    border-left: 3px solid #30363d; padding: 6px 16px;
+    color: #8b949e; font-size: 14px; line-height: 1.7; font-style: italic;
+    margin: 6px 0;
+  }
+
+  .b-divider { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 16px 0; }
+
+  .b-image {
+    border-radius: 8px; background: #161b22; border: 1px dashed rgba(107,163,245,0.2);
+    padding: 20px; text-align: center; color: #4d6fa0; font-size: 12px;
+    margin: 8px 0;
+  }
+
+  /* Cursor blink */
+  .cursor { display: inline-block; width: 2px; height: 14px; background: #6ba3f5; margin-left: 1px; vertical-align: middle; animation: blink 1s step-end infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* Slash menu */
+  .slash-menu {
+    position: absolute;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 6px 0;
+    width: 230px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+    z-index: 100;
+    left: 120px;
+    top: 260px;
+  }
+  .sm-label { padding: 4px 12px; font-size: 10px; color: #6e7681; letter-spacing: .08em; text-transform: uppercase; }
+  .sm-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 12px; cursor: pointer;
+    font-size: 12px; color: #c9d1d9;
+    transition: background .1s;
+  }
+  .sm-item.active { background: #1f2937; color: #e6edf3; }
+  .sm-item-icon {
+    width: 26px; height: 26px; border-radius: 5px;
+    background: #21262d; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; flex-shrink: 0; border: 1px solid #30363d;
+  }
+  .sm-item-text h4 { font-size: 12px; font-weight: 500; color: inherit; }
+  .sm-item-text p { font-size: 10px; color: #6e7681; margin-top: 1px; }
+
+  /* Bubble menu */
+  .bubble-menu {
+    position: absolute;
+    top: 190px; left: 140px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 7px;
+    padding: 4px;
+    display: flex; gap: 2px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  }
+  .bm-btn {
+    padding: 4px 8px; border-radius: 4px; border: none;
+    background: none; color: #8b949e; font-size: 12px; cursor: pointer;
+    min-width: 28px;
+  }
+  .bm-btn:hover { background: #21262d; color: #e6edf3; }
+  .bm-btn.active { background: #1f6feb33; color: #79c0ff; }
+  .bm-sep { width: 1px; background: #30363d; margin: 3px 2px; }
+
+  .annotation {
+    position: absolute;
+    font-size: 10px;
+    color: #4d6fa0;
+    border: 1px dashed rgba(107,163,245,0.2);
+    border-radius: 4px;
+    padding: 3px 7px;
+    background: rgba(107,163,245,0.04);
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div style="padding: 24px 16px;">
+  <h2 style="font-size:15px;font-weight:600;color:#e6edf3;margin-bottom:4px;">Design — Nouvelle page de notes</h2>
+  <p style="font-size:12px;color:#6e7681;margin-bottom:20px;">Aperçu de la future interface avec l'éditeur Tiptap</p>
+
+  <div class="frame" style="position:relative;">
+
+    <!-- HEADER -->
+    <div class="note-header">
+      <div class="back-btn">←</div>
+      <div class="node-info">
+        <div class="node-dot"></div>
+        <div class="node-name">React</div>
+        <div class="state-badge">En cours</div>
+      </div>
+      <div class="header-actions">
+        <div class="h-btn">⌘Z Annuler</div>
+      </div>
+    </div>
+
+    <!-- EDITOR -->
+    <div class="editor-wrap" style="position:relative;">
+      <div class="editor-content">
+
+        <!-- H1 -->
+        <div class="b-h1">Hooks React — Notes</div>
+
+        <!-- Texte intro -->
+        <div class="b-text block">Les hooks permettent d'utiliser l'état et d'autres fonctionnalités de React sans écrire de classe.</div>
+
+        <!-- H2 -->
+        <div class="b-h2">État local</div>
+
+        <!-- Texte avec inline code -->
+        <div class="b-text block"><strong>useState</strong> retourne un tableau — <code>[valeur, setter]</code>. Chaque appel au setter déclenche un re-render.</div>
+
+        <!-- Code block -->
+        <div class="b-code">
+          <div class="lang">javascript</div>
+          const [count, setCount] = useState(0);<br/>
+          const [user, setUser] = useState(null);
+        </div>
+
+        <!-- Callout -->
+        <div class="b-callout">
+          💡 Le setter est stable entre les renders — pas besoin de le mettre dans les dépendances useEffect.
+        </div>
+
+        <!-- H2 -->
+        <div class="b-h2">Effets de bord</div>
+
+        <!-- Bullets -->
+        <div class="b-bullet block">Se lance après chaque render (par défaut)</div>
+        <div class="b-bullet block">Le tableau de dépendances contrôle les re-runs</div>
+        <div class="b-bullet block">Retourner une fonction = cleanup automatique</div>
+
+        <!-- Divider -->
+        <hr class="b-divider"/>
+
+        <!-- Quote -->
+        <div class="b-quote">« Chaque render est un snapshot — les effets voient la valeur au moment du render. »</div>
+
+        <!-- H2 -->
+        <div class="b-h2">À faire</div>
+
+        <!-- Todos -->
+        <div class="b-todo block"><div class="b-todo-box done"></div><span>Comprendre la règle des hooks</span></div>
+        <div class="b-todo block"><div class="b-todo-box"></div><span>Pratiquer useCallback et useMemo</span></div>
+        <div class="b-todo block"><div class="b-todo-box"></div><span>Lire la doc sur les custom hooks<span class="cursor"></span></span></div>
+
+      </div>
+
+      <!-- Bubble menu (sélection de texte) -->
+      <div class="bubble-menu">
+        <button class="bm-btn active">B</button>
+        <button class="bm-btn" style="font-style:italic">I</button>
+        <button class="bm-btn" style="text-decoration:underline">U</button>
+        <div class="bm-sep"></div>
+        <button class="bm-btn" style="font-family:monospace;font-size:11px">`code`</button>
+        <div class="bm-sep"></div>
+        <button class="bm-btn">H1</button>
+        <button class="bm-btn">H2</button>
+      </div>
+
+      <!-- Slash menu -->
+      <div class="slash-menu">
+        <div class="sm-label">Blocs</div>
+        <div class="sm-item active">
+          <div class="sm-item-icon">H1</div>
+          <div class="sm-item-text"><h4>Titre</h4><p>Grand titre de section</p></div>
+        </div>
+        <div class="sm-item">
+          <div class="sm-item-icon">•</div>
+          <div class="sm-item-text"><h4>Liste à puces</h4><p>Énumération simple</p></div>
+        </div>
+        <div class="sm-item">
+          <div class="sm-item-icon">☑</div>
+          <div class="sm-item-text"><h4>Case à cocher</h4><p>Todo, exercice à faire</p></div>
+        </div>
+        <div class="sm-item">
+          <div class="sm-item-icon" style="font-size:10px">&lt;/&gt;</div>
+          <div class="sm-item-text"><h4>Code</h4><p>Bloc de code coloré</p></div>
+        </div>
+        <div class="sm-item">
+          <div class="sm-item-icon">💡</div>
+          <div class="sm-item-text"><h4>Callout</h4><p>Point clé à retenir</p></div>
+        </div>
+      </div>
+
+      <!-- Annotations -->
+      <div class="annotation" style="right:16px;top:16px;">① Menu slash ( / )</div>
+      <div class="annotation" style="right:16px;top:46px;">② Bubble menu à la sélection</div>
+
+    </div>
+
+    <!-- Footer hint -->
+    <div style="padding:10px 20px;border-top:1px solid rgba(255,255,255,0.04);background:#0d1117;text-align:center;font-size:11px;color:#6e7681;">
+      Tape <kbd style="background:#21262d;border:1px solid #30363d;padding:1px 5px;border-radius:3px;color:#c9d1d9;">/</kbd> pour insérer un bloc · <kbd style="background:#21262d;border:1px solid #30363d;padding:1px 5px;border-radius:3px;color:#c9d1d9;">⌘Z</kbd> pour annuler
+    </div>
+
+  </div>
+
+  <p style="font-size:11px;color:#6e7681;margin-top:16px;text-align:center;">
+    Basé sur Tiptap · Données migrées en JSON Tiptap · Design intégré au thème spatial existant
+  </p>
+</div>
+<script>
+// Simple toggle for interactive feel
+document.querySelectorAll('.sm-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.sm-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+document.querySelectorAll('.b-todo-box').forEach(box => {
+  box.addEventListener('click', () => box.classList.toggle('done'));
+});
+</script>
+</body>
+</html>

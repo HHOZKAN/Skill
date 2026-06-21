@@ -1,0 +1,112 @@
+<h2>Comment tu veux créer tes blocs ?</h2>
+<p class="subtitle">L'interaction quotidienne — la plus importante à bien choisir</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="markdown" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d1117;padding:16px 18px;border-radius:8px 8px 0 0;min-height:175px;font-family:monospace;">
+      <div style="color:#8b949e;font-size:10px;margin-bottom:12px;font-family:system-ui;letter-spacing:.05em;">Tu tapes directement :</div>
+
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+        <span style="color:#6e7681;font-size:12px;user-select:none;width:30px;"># </span>
+        <span style="color:#e6edf3;font-size:15px;font-weight:700;">Hooks React</span>
+        <span style="background:#1f6feb33;color:#79c0ff;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:6px;font-family:system-ui;">→ titre</span>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+        <span style="color:#6e7681;font-size:12px;user-select:none;width:30px;">- </span>
+        <span style="color:#c9d1d9;font-size:12px;">useState = état local</span>
+        <span style="background:#1f6feb33;color:#79c0ff;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:6px;font-family:system-ui;">→ liste</span>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:8px;">
+        <span style="color:#6e7681;font-size:12px;user-select:none;width:30px;">```</span>
+        <div>
+          <span style="color:#7ee787;font-size:11px;">const [v, setV] = useState(0)</span>
+          <span style="background:#1f6feb33;color:#79c0ff;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:6px;font-family:system-ui;">→ code</span>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="color:#6e7681;font-size:12px;user-select:none;width:30px;">&gt; </span>
+        <span style="color:#c9d1d9;font-size:12px;border-left:2px solid #238636;padding-left:8px;">Retenir : nettoyer les effets</span>
+        <span style="background:#1f6feb33;color:#79c0ff;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:6px;font-family:system-ui;">→ callout</span>
+      </div>
+
+      <div style="margin-top:14px;padding-top:10px;border-top:1px solid #21262d;color:#6e7681;font-size:10px;font-family:system-ui;">
+        #&nbsp;titre&nbsp;&nbsp;&nbsp;##&nbsp;sous-titre&nbsp;&nbsp;&nbsp;-&nbsp;liste&nbsp;&nbsp;&nbsp;```&nbsp;code&nbsp;&nbsp;&nbsp;&gt;&nbsp;callout
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Raccourcis Markdown</h3>
+      <p>Tu tapes <code>#</code> → titre, <code>-</code> → liste, <code>```</code> → code. Ça se transforme instantanément. Zéro friction si tu connais déjà le Markdown.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="slash" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d1117;padding:16px 18px;border-radius:8px 8px 0 0;min-height:175px;">
+      <div style="color:#8b949e;font-size:10px;margin-bottom:12px;font-family:system-ui;letter-spacing:.05em;">Tu tapes <kbd style="background:#21262d;border:1px solid #30363d;padding:1px 5px;border-radius:3px;font-size:10px;color:#c9d1d9;">/</kbd> n'importe où :</div>
+
+      <!-- current line with / -->
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+        <span style="color:#c9d1d9;font-size:12px;">Notion de re-render /</span>
+        <span style="width:2px;height:14px;background:#6ba3f5;display:inline-block;animation:blink 1s step-end infinite;"></span>
+      </div>
+
+      <!-- slash menu -->
+      <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:6px 0;width:200px;box-shadow:0 8px 24px rgba(0,0,0,0.5);">
+        <div style="padding:4px 10px;color:#8b949e;font-size:10px;letter-spacing:.06em;text-transform:uppercase;">Blocs</div>
+        <div style="padding:6px 12px;display:flex;align-items:center;gap:8px;background:#1f2937;border-radius:4px;margin:0 4px;">
+          <span style="font-size:13px;">📝</span><span style="color:#e6edf3;font-size:12px;">Texte</span>
+        </div>
+        <div style="padding:6px 12px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:13px;">H1</span><span style="color:#c9d1d9;font-size:12px;">Titre</span>
+        </div>
+        <div style="padding:6px 12px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:13px;">•</span><span style="color:#c9d1d9;font-size:12px;">Liste à puces</span>
+        </div>
+        <div style="padding:6px 12px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:13px;">💡</span><span style="color:#c9d1d9;font-size:12px;">Callout</span>
+        </div>
+        <div style="padding:6px 12px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:13px;">{'<>'}</span><span style="color:#c9d1d9;font-size:12px;">Code</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Menu slash <code>/</code></h3>
+      <p>Tu tapes <code>/</code> et un menu apparaît. Tu cherches, tu sélectionnes. Très découvrable — pas besoin de mémoriser des raccourcis.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="both" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d1117;padding:16px 18px;border-radius:8px 8px 0 0;min-height:175px;font-family:system-ui;">
+
+      <!-- floating toolbar -->
+      <div style="display:flex;align-items:center;gap:2px;background:#161b22;border:1px solid #30363d;border-radius:8px;padding:5px 8px;width:fit-content;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,0.4);">
+        <button style="background:none;border:none;color:#8b949e;font-size:11px;padding:3px 6px;border-radius:4px;cursor:pointer;font-weight:700;">B</button>
+        <button style="background:none;border:none;color:#8b949e;font-size:11px;padding:3px 6px;border-radius:4px;cursor:pointer;font-style:italic;">I</button>
+        <span style="width:1px;height:14px;background:#30363d;margin:0 3px;"></span>
+        <button style="background:none;border:none;color:#8b949e;font-size:10px;padding:3px 6px;border-radius:4px;">H1</button>
+        <button style="background:none;border:none;color:#8b949e;font-size:10px;padding:3px 6px;border-radius:4px;">H2</button>
+        <span style="width:1px;height:14px;background:#30363d;margin:0 3px;"></span>
+        <button style="background:none;border:none;color:#8b949e;font-size:11px;padding:3px 6px;border-radius:4px;">•</button>
+        <button style="background:none;border:none;color:#8b949e;font-size:11px;padding:3px 6px;border-radius:4px;">{'<>'}</button>
+        <button style="background:#1c2a1c;border:none;color:#7ee787;font-size:11px;padding:3px 8px;border-radius:4px;">💡</button>
+      </div>
+
+      <div style="color:#e6edf3;font-size:15px;font-weight:700;margin-bottom:8px;">Hooks React</div>
+      <div style="color:#c9d1d9;font-size:12px;line-height:1.7;margin-bottom:8px;">
+        <span style="color:#e6edf3;font-weight:600;">useState</span> retourne un tableau — valeur et setter. Tape <code style="background:#21262d;padding:1px 4px;border-radius:3px;font-size:10px;">- </code> ou clique la barre.
+      </div>
+      <div style="background:#1c2a1c;border-left:3px solid #238636;padding:6px 10px;border-radius:4px;color:#7ee787;font-size:11px;">
+        💡 Les deux entrées coexistent — markdown ET barre d'outils
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Les deux à la fois</h3>
+      <p>Raccourcis Markdown <em>et</em> barre d'outils contextuelle (apparaît à la sélection). Tu choisis selon ton humeur.</p>
+    </div>
+  </div>
+
+</div>
