@@ -16,8 +16,48 @@ export interface ConstellationLink {
 
 import type { JSONContent } from '@tiptap/react';
 
+export type CanvasTextItem = {
+  kind: 'text';
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  h?: number;
+  bg?: string | null;
+  rotate?: number;
+  content: JSONContent;
+};
+
+export type CanvasImageItem = {
+  kind: 'image';
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  src: string;
+  alt?: string;
+};
+
+export type CanvasItem = CanvasTextItem | CanvasImageItem;
+
+export interface CanvasStroke {
+  id: string;
+  color: string;
+  width: number;
+  points: [number, number][];
+}
+
+export interface NoteCanvas {
+  items: CanvasItem[];
+  strokes: CanvasStroke[];
+  pan?: { x: number; y: number };
+  zoom?: number;
+}
+
 export interface NoteData {
-  content: JSONContent | null;
+  canvas?: NoteCanvas;
+  content?: JSONContent | null;
 }
 
 export interface Tree {
