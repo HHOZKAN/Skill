@@ -8,12 +8,14 @@ function parseHash(): Route {
     if (parts[2] === 'n' && parts[3]) return { view: 'note', treeId: parts[1], nodeId: parts[3] };
     return { view: 'tree', treeId: parts[1] };
   }
+  if (parts[0] === 'revision') return { view: 'review' };
   return { view: 'home' };
 }
 
 function toHash(route: Route): string {
   if (route.view === 'tree') return `#/t/${route.treeId}`;
   if (route.view === 'note') return `#/t/${route.treeId}/n/${route.nodeId}`;
+  if (route.view === 'review') return '#/revision';
   return '#/';
 }
 

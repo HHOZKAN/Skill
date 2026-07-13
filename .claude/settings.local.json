@@ -24,7 +24,8 @@
       "Bash(node -e \"const m=require\\('@tiptap/extension-drag-handle-react'\\); console.log\\('exports:', Object.keys\\(m\\)\\);\")",
       "Bash(node -e \"const m=require\\('@tiptap/extension-drag-handle'\\); console.log\\('exports:', Object.keys\\(m\\)\\);\")",
       "Bash(xargs cat)",
-      "Bash(rtk tsc *)"
+      "Bash(rtk tsc *)",
+      "Bash(npx tsc *)"
     ]
   }
 }

@@ -1,8 +1,16 @@
 import { Extension, ReactRenderer } from '@tiptap/react';
 import type { Editor, Range } from '@tiptap/react';
+import { PluginKey } from '@tiptap/pm/state';
 import Suggestion from '@tiptap/suggestion';
 import type { SuggestionProps, SuggestionKeyDownProps } from '@tiptap/suggestion';
 import SlashMenu, { type SlashMenuRef } from '../../components/SlashMenu';
+import { positionPopup } from './popupPosition';
+
+/* Clé de plugin dédiée : sans ça, deux extensions basées sur @tiptap/suggestion
+   (celle-ci et noteMention) retombent sur la même clé par défaut et
+   ProseMirror refuse d'enregistrer le second plugin ("Adding different
+   instances of a keyed plugin"). */
+const slashPluginKey = new PluginKey('slashCommand');
 
 export interface SlashItem {
   title: string;
@@ -102,6 +110,13 @@ export const SLASH_ITEMS: SlashItem[] = [
     keywords: ['image', 'photo', 'capture', 'img'],
     command: ({ editor, range }) => insertImage(editor, range),
   },
+  {
+    title: 'Lier à une compétence', description: 'Référencer une autre note de l’atlas', icon: '◆',
+    keywords: ['lien', 'lier', 'compétence', 'référence', 'mention', 'atlas'],
+    /* Insère "@" et rend la main : le déclencheur de mention (voir noteMention.ts)
+       s'ouvre alors exactement comme si l'utilisateur l'avait tapé lui-même. */
+    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).insertContent('@').run(),
+  },
 ];
 
 function filterItems(query: string): SlashItem[] {
@@ -114,22 +129,6 @@ function filterItems(query: string): SlashItem[] {
   );
 }
 
-function positionPopup(popup: HTMLElement, clientRect: (() => DOMRect | null) | null | undefined) {
-  if (!clientRect) return;
-  const rect = clientRect();
-  if (!rect) return;
-  const margin = 6;
-  const popupH = popup.offsetHeight || 320;
-  const popupW = popup.offsetWidth || 240;
-  const spaceBelow = window.innerHeight - rect.bottom;
-  const top = spaceBelow < popupH + margin && rect.top > popupH + margin
-    ? rect.top - popupH - margin
-    : rect.bottom + margin;
-  const left = Math.min(rect.left, window.innerWidth - popupW - margin);
-  popup.style.left = `${Math.max(margin, left)}px`;
-  popup.style.top = `${top}px`;
-}
-
 export const SlashCommand = Extension.create({
   name: 'slashCommand',
 
@@ -137,6 +136,7 @@ export const SlashCommand = Extension.create({
     return [
       Suggestion<SlashItem>({
         editor: this.editor,
+        pluginKey: slashPluginKey,
         char: '/',
         allowSpaces: false,
         startOfLine: false,

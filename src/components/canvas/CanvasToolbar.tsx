@@ -1,7 +1,9 @@
-export type Tool = 'select' | 'text' | 'pen' | 'eraser';
+export type Tool = 'select' | 'text' | 'pen' | 'eraser' | 'link' | 'frame' | 'shape';
+export type ShapeKind = 'rect' | 'ellipse';
 
 export const PEN_COLORS = ['#0f172a', '#dc2626', '#2563eb', '#16a34a', '#f59e0b', '#a855f7'] as const;
 export const PEN_WIDTHS = [1.5, 3, 6] as const;
+export const SHAPE_COLORS = ['#dbeafe', '#fef9c3', '#dcfce7', '#fce7f3', '#fed7aa', '#e2e8f0'] as const;
 
 interface Props {
   tool: Tool;
@@ -13,6 +15,10 @@ interface Props {
   setPenColor: (c: string) => void;
   penWidth: number;
   setPenWidth: (w: number) => void;
+  shapeKind: ShapeKind;
+  setShapeKind: (k: ShapeKind) => void;
+  shapeColor: string;
+  setShapeColor: (c: string) => void;
 }
 
 function IconCursor() {
@@ -54,10 +60,51 @@ function IconEraser() {
     </svg>
   );
 }
+function IconLink() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="5" cy="19" r="2.4" />
+      <circle cx="19" cy="5" r="2.4" />
+      <path d="M7 17.5L16.5 8" />
+      <path d="M13 8h3.5V11.5" />
+    </svg>
+  );
+}
+function IconFrame() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M7 2v18M17 4v18" />
+      <path d="M2 7h18M4 17h18" />
+    </svg>
+  );
+}
+function IconShape() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="3" y="4" width="11" height="11" rx="1.5" />
+      <circle cx="16.5" cy="16.5" r="4.5" />
+    </svg>
+  );
+}
+function IconRect() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+    </svg>
+  );
+}
+function IconEllipse() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <ellipse cx="12" cy="12" rx="9" ry="7" />
+    </svg>
+  );
+}
 
 export default function CanvasToolbar({
   tool, setTool, zoom, onZoomReset, onImportImage,
   penColor, setPenColor, penWidth, setPenWidth,
+  shapeKind, setShapeKind, shapeColor, setShapeColor,
 }: Props) {
   const Btn = ({ t, label, hint, children }: { t: Tool; label: string; hint: string; children: React.ReactNode }) => (
     <button
@@ -77,6 +124,9 @@ export default function CanvasToolbar({
       <Btn t="text" label="Texte" hint="T"><IconText /></Btn>
       <Btn t="pen" label="Plume" hint="B"><IconPen /></Btn>
       <Btn t="eraser" label="Gomme" hint="E"><IconEraser /></Btn>
+      <Btn t="link" label="Relier" hint="R"><IconLink /></Btn>
+      <Btn t="frame" label="Cadre" hint="F"><IconFrame /></Btn>
+      <Btn t="shape" label="Formes" hint="S"><IconShape /></Btn>
       <button
         type="button"
         className="ct-btn"
@@ -114,6 +164,44 @@ export default function CanvasToolbar({
               >
                 <span style={{ width: `${w * 2}px`, height: `${w * 2}px`, background: penColor }} />
               </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {tool === 'shape' && (
+        <div className="ct-pen-settings">
+          <div className="ct-shape-kinds">
+            <button
+              type="button"
+              className={`ct-shape-kind${shapeKind === 'rect' ? ' active' : ''}`}
+              onClick={() => setShapeKind('rect')}
+              title="Rectangle"
+              aria-label="Rectangle"
+            >
+              <IconRect />
+            </button>
+            <button
+              type="button"
+              className={`ct-shape-kind${shapeKind === 'ellipse' ? ' active' : ''}`}
+              onClick={() => setShapeKind('ellipse')}
+              title="Ellipse"
+              aria-label="Ellipse"
+            >
+              <IconEllipse />
+            </button>
+          </div>
+          <div className="ct-colors">
+            {SHAPE_COLORS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                className={`ct-color${shapeColor === c ? ' active' : ''}`}
+                style={{ background: c }}
+                onClick={() => setShapeColor(c)}
+                title={c}
+                aria-label={`Couleur ${c}`}
+              />
             ))}
           </div>
         </div>

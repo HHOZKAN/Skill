@@ -10,6 +10,8 @@ import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
 import { createLowlight, common } from 'lowlight';
 import { Callout } from '../../lib/extensions/callout';
 import { SlashCommand } from '../../lib/extensions/slashCommand';
+import { NoteMention } from '../../lib/extensions/noteMention';
+import { extractYouTubeId, getUrlDomain, PACER_INFO } from '../../lib/canvas';
 import type { CanvasTextItem } from '../../types';
 
 const lowlight = createLowlight(common);
@@ -23,10 +25,24 @@ interface Props {
   onChange: (patch: Partial<CanvasTextItem>) => void;
   onDelete: () => void;
   onEditorReady: (editor: Editor | null) => void;
+  linking?: boolean;
+  isLinkSource?: boolean;
+  onLinkPick?: () => void;
+  onNavigateToNote: (treeId: string, nodeId: string) => void;
+  onDragTo: (x: number, y: number) => void;
+  onDragEnd: () => void;
 }
 
-export default function TextItem({ item, selected, zoom, onSelect, onChange, onDelete, onEditorReady }: Props) {
+export default function TextItem({ item, selected, zoom, onSelect, onChange, onDelete, onEditorReady, linking, isLinkSource, onLinkPick, onNavigateToNote, onDragTo, onDragEnd }: Props) {
   const lastContent = useRef(item.content);
+  const youtubeId = item.link ? extractYouTubeId(item.link) : null;
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  /* La liste d'extensions n'est lue qu'à la création de l'éditeur (Tiptap ne
+     la remet pas à jour à chaque rendu) : on passe par une ref pour que la
+     mention navigue toujours avec le callback le plus récent. */
+  const onNavigateRef = useRef(onNavigateToNote);
+  useEffect(() => { onNavigateRef.current = onNavigateToNote; }, [onNavigateToNote]);
 
   const editor = useEditor({
     extensions: [
@@ -47,6 +63,10 @@ export default function TextItem({ item, selected, zoom, onSelect, onChange, onD
       CodeBlockLowlight.configure({ lowlight }),
       Callout,
       SlashCommand,
+      // eslint-disable-next-line react-hooks/refs -- lu seulement au clic sur la puce, jamais pendant ce rendu
+      NoteMention.configure({
+        onNavigate: (treeId, nodeId) => onNavigateRef.current(treeId, nodeId),
+      }),
     ],
     content: item.content,
     autofocus: false,
@@ -78,6 +98,24 @@ export default function TextItem({ item, selected, zoom, onSelect, onChange, onD
     return () => onEditorReadyRef.current(null);
   }, [editor]);
 
+  /* Taille automatique : le bloc mesure son propre rendu et resynchronise w/h
+     stockés (utiles aux guides d'alignement, connecteurs, cadres…), plutôt
+     que d'imposer une largeur/hauteur figée. */
+  useEffect(() => {
+    if (!item.autoWidth && !item.autoHeight) return;
+    const el = rootRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      const patch: Partial<CanvasTextItem> = {};
+      if (item.autoWidth) patch.w = el.offsetWidth;
+      if (item.autoHeight) patch.h = el.offsetHeight;
+      onChange(patch);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item.autoWidth, item.autoHeight]);
+
   /* Suppr quand le bloc est sélectionné et qu'on n'est pas en train d'éditer */
   useEffect(() => {
     if (!selected) return;
@@ -102,6 +140,7 @@ export default function TextItem({ item, selected, zoom, onSelect, onChange, onD
   const onItemMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
     e.stopPropagation();
+    if (linking) { onLinkPick?.(); return; }
     onSelect();
     if (editor?.isFocused) return;
     const startX = e.clientX, startY = e.clientY;
@@ -114,14 +153,15 @@ export default function TextItem({ item, selected, zoom, onSelect, onChange, onD
         /* On déplace → on annule l'entrée en édition que le mousedown a amorcée */
         (document.activeElement as HTMLElement | null)?.blur?.();
       }
-      onChange({
-        x: origin.x + (ev.clientX - startX) / zoom,
-        y: origin.y + (ev.clientY - startY) / zoom,
-      });
+      onDragTo(
+        origin.x + (ev.clientX - startX) / zoom,
+        origin.y + (ev.clientY - startY) / zoom,
+      );
     };
     const onUp = () => {
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
+      if (dragging) onDragEnd();
     };
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
@@ -138,47 +178,11 @@ export default function TextItem({ item, selected, zoom, onSelect, onChange, onD
     const onMove = (ev: MouseEvent) => {
       const w = Math.max(140, startW + (ev.clientX - startX) / zoom);
       if (mode === 'w') {
-        onChange({ w });
+        onChange({ w, autoWidth: false });
       } else {
         const h = Math.max(60, startH + (ev.clientY - startY) / zoom);
-        onChange({ w, h });
+        onChange({ w, h, autoWidth: false, autoHeight: false });
       }
-    };
-    const onUp = () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
-    };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-  };
-
-  /* Rotation libre : glisser une poignée fait tourner le post-it autour de son centre.
-     Zone morte près du centre : un contrôle purement angulaire devient
-     extrêmement sensible quand le curseur s'approche du pivot (la moindre
-     bougeotte y produit des sauts d'angle énormes) ; en dessous de ce rayon
-     on ignore le mouvement plutôt que de suivre un angle instable.
-     Rotation libre et continue par défaut — Maj = magnétisme par 15°
-     (aimanter par défaut provoquait des allers-retours quand la souris
-     hésitait pile entre deux paliers, d'où l'effet "tourne n'importe comment"). */
-  const ROTATE_DEAD_ZONE = 30;
-  const ROTATE_SNAP = 15;
-  const startRotate = (e: React.MouseEvent) => {
-    if (e.button !== 0) return;
-    e.stopPropagation();
-    e.preventDefault();
-    const el = (e.currentTarget as HTMLElement).closest('.canvas-text') as HTMLElement;
-    const rect = el.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const startAngle = Math.atan2(e.clientY - cy, e.clientX - cx) * (180 / Math.PI);
-    const baseRotate = item.rotate ?? 0;
-    const onMove = (ev: MouseEvent) => {
-      const dx = ev.clientX - cx, dy = ev.clientY - cy;
-      if (Math.hypot(dx, dy) < ROTATE_DEAD_ZONE) return;
-      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      let next = baseRotate + (angle - startAngle);
-      if (ev.shiftKey) next = Math.round(next / ROTATE_SNAP) * ROTATE_SNAP;
-      onChange({ rotate: next });
     };
     const onUp = () => {
       window.removeEventListener('mousemove', onMove);
@@ -190,19 +194,56 @@ export default function TextItem({ item, selected, zoom, onSelect, onChange, onD
 
   return (
     <div
+      ref={rootRef}
       data-item-id={item.id}
-      className={`canvas-text${selected ? ' selected' : ''}${item.bg ? ' sticky' : ''}`}
+      className={`canvas-text${selected ? ' selected' : ''}${item.bg ? ' sticky' : ''}${isLinkSource ? ' link-source' : ''}${item.autoWidth ? ' auto-w' : ''}${item.autoHeight ? ' auto-h' : ''}`}
       style={{
         position: 'absolute',
         left: item.x,
         top: item.y,
-        width: item.w,
-        height: item.h,
+        width: item.autoWidth ? undefined : item.w,
+        height: item.autoHeight ? undefined : item.h,
         background: item.bg || undefined,
         transform: item.bg ? `rotate(${item.rotate ?? 0}deg)` : undefined,
       }}
       onMouseDown={onItemMouseDown}
     >
+      {item.pacer && (
+        <span
+          className="canvas-pacer-badge"
+          style={{ background: PACER_INFO[item.pacer].color }}
+          title={`${PACER_INFO[item.pacer].label} — ${PACER_INFO[item.pacer].hint}`}
+        >
+          {item.pacer}
+        </span>
+      )}
+      {item.link && (
+        <div className="canvas-link-embed" onMouseDown={(e) => e.stopPropagation()}>
+          {youtubeId ? (
+            <div className="cle-video">
+              <iframe
+                src={`https://www.youtube-nocookie.com/embed/${youtubeId}`}
+                title="Vidéo"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <a className="cle-link" href={item.link} target="_blank" rel="noopener noreferrer">
+              <span className="cle-domain">{getUrlDomain(item.link)}</span>
+              <span className="cle-url">{item.link}</span>
+            </a>
+          )}
+          <button
+            type="button"
+            className="cle-remove"
+            title="Retirer le lien"
+            onClick={() => onChange({ link: null })}
+          >
+            ✕
+          </button>
+        </div>
+      )}
       <EditorContent editor={editor} />
 
       {selected && (
@@ -219,36 +260,6 @@ export default function TextItem({ item, selected, zoom, onSelect, onChange, onD
             style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'bottom right' }}
             title="Redimensionner la zone"
           />
-
-          {/* poignées de rotation dans les 4 coins — uniquement sur un post-it, tournent avec lui */}
-          {item.bg && (
-            <>
-              <span
-                className="canvas-text-rotate-corner tl"
-                onMouseDown={startRotate}
-                style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'top left' }}
-                title="Faire pivoter (Maj = par paliers de 15°)"
-              />
-              <span
-                className="canvas-text-rotate-corner tr"
-                onMouseDown={startRotate}
-                style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'top right' }}
-                title="Faire pivoter (Maj = par paliers de 15°)"
-              />
-              <span
-                className="canvas-text-rotate-corner bl"
-                onMouseDown={startRotate}
-                style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'bottom left' }}
-                title="Faire pivoter (Maj = par paliers de 15°)"
-              />
-              <span
-                className="canvas-text-rotate-corner br"
-                onMouseDown={startRotate}
-                style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'bottom right' }}
-                title="Faire pivoter (Maj = par paliers de 15°)"
-              />
-            </>
-          )}
         </>
       )}
     </div>

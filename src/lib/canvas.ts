@@ -1,4 +1,4 @@
-import type { NoteCanvas, NoteData, CanvasItem } from '../types';
+import type { NoteCanvas, NoteData, CanvasItem, PacerCode } from '../types';
 import type { JSONContent } from '@tiptap/react';
 
 export const EMPTY_DOC = { type: 'doc', content: [{ type: 'paragraph' }] };
@@ -19,6 +19,34 @@ export const STICKY_COLORS = [
   { color: '#dcfce7', title: 'Vert' },
   { color: '#fed7aa', title: 'Orange' },
 ];
+
+/* Méthode PACER (Procédural / Analogue / Conceptuel / Evidence / Référence) :
+   nature de l'info lue, et le traitement à lui appliquer pour bien la retenir. */
+export const PACER_INFO: Record<PacerCode, { label: string; color: string; hint: string }> = {
+  P: { label: 'Procédural', color: '#f59e0b', hint: 'Pratiquer dès que possible — sinon ne pas chercher à mémoriser' },
+  A: { label: 'Analogue', color: '#a855f7', hint: 'Critiquer : en quoi c’est similaire / différent de ce que tu sais déjà' },
+  C: { label: 'Conceptuel', color: '#2a6fdb', hint: 'Cartographier : relier ce concept aux autres, pas de notes linéaires' },
+  E: { label: 'Evidence', color: '#16a34a', hint: 'Stocker maintenant, répéter plus tard en t’en servant pour argumenter' },
+  R: { label: 'Référence', color: '#64748b', hint: 'Stocker et réviser en rappel actif espacé (flashcards)' },
+};
+
+/* Id de vidéo YouTube à partir d'une URL (watch, youtu.be, shorts, embed) — null si le lien n'est pas YouTube */
+export function extractYouTubeId(url: string): string | null {
+  let u: URL;
+  try { u = new URL(url); } catch { return null; }
+  const host = u.hostname.replace(/^www\.|^m\.|^music\./, '');
+  if (host === 'youtu.be') return u.pathname.slice(1).split('/')[0] || null;
+  if (host !== 'youtube.com') return null;
+  if (u.pathname === '/watch') return u.searchParams.get('v');
+  if (u.pathname.startsWith('/embed/')) return u.pathname.split('/')[2] || null;
+  if (u.pathname.startsWith('/shorts/')) return u.pathname.split('/')[2] || null;
+  return null;
+}
+
+/* Nom de domaine lisible pour l'aperçu d'un lien générique */
+export function getUrlDomain(url: string): string {
+  try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url; }
+}
 
 export interface CanvasHeading {
   itemId: string;

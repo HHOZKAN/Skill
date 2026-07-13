@@ -17,9 +17,10 @@ interface Props {
   onBack: () => void;
   onSave: (nodeId: string, data: NoteData) => void;
   onRename: (nodeId: string, name: string) => void;
+  onNavigateToNote: (treeId: string, nodeId: string) => void;
 }
 
-export default function NotesPage({ tree, node, onBack, onSave, onRename }: Props) {
+export default function NotesPage({ tree, node, onBack, onSave, onRename, onNavigateToNote }: Props) {
   const initialCanvas = getOrMigrateCanvas(tree.notes?.[node.id]);
 
   const onSaveRef = useRef(onSave);
@@ -92,10 +93,16 @@ export default function NotesPage({ tree, node, onBack, onSave, onRename }: Prop
         />
       </div>
 
-      <NoteCanvas initial={initialCanvas} onChange={handleCanvasChange} />
+      <NoteCanvas
+        initial={initialCanvas}
+        onChange={handleCanvasChange}
+        treeId={tree.id}
+        nodeId={node.id}
+        onNavigateToNote={onNavigateToNote}
+      />
 
       <div className="note-footer">
-        <kbd>V</kbd> sélection · <kbd>T</kbd> texte · <kbd>B</kbd> plume · <kbd>E</kbd> gomme · drop/colle une image · <kbd>Espace</kbd>+glisser pan · <kbd>Ctrl</kbd>+molette zoom · <kbd>Échap</kbd> retour
+        <kbd>V</kbd> sélection · <kbd>T</kbd> texte · <kbd>B</kbd> plume · <kbd>E</kbd> gomme · <kbd>R</kbd> relier · <kbd>F</kbd> cadre · <kbd>S</kbd> formes · drop/colle une image · <kbd>Espace</kbd>+glisser pan · <kbd>Ctrl</kbd>+molette zoom · <kbd>Échap</kbd> retour
       </div>
     </div>
   );

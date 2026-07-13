@@ -25,8 +25,40 @@ export type CanvasTextItem = {
   h?: number;
   bg?: string | null;
   rotate?: number;
+  link?: string | null;
+  pacer?: PacerCode | null;
+  autoWidth?: boolean;
+  autoHeight?: boolean;
+  review?: ReviewState;
+  reviewLog?: ReviewLogEntry[];
+  weeklyChecklist?: ChecklistItem[];
+  weeklyChecklistResetAt?: number;
   content: JSONContent;
 };
+
+/* Méthode PACER : nature de l'information, pour choisir le bon traitement */
+export type PacerCode = 'P' | 'A' | 'C' | 'E' | 'R';
+
+/* Répétition espacée (simplifiée) des blocs Référence/Evidence */
+export interface ReviewState {
+  dueAt: number;
+  intervalDays: number;
+}
+
+/* Journal de révision : ce qu'on a pensé/compris ce jour-là, pas juste su/pas su */
+export interface ReviewLogEntry {
+  id: string;
+  date: number;
+  note: string;
+  remembered: boolean;
+}
+
+/* Entraînement hebdomadaire : coché pendant la semaine, se remet à zéro ensuite */
+export interface ChecklistItem {
+  id: string;
+  label: string;
+  checked: boolean;
+}
 
 export type CanvasImageItem = {
   kind: 'image';
@@ -39,7 +71,38 @@ export type CanvasImageItem = {
   alt?: string;
 };
 
-export type CanvasItem = CanvasTextItem | CanvasImageItem;
+/* Cadre : regroupe visuellement les blocs qu'il englobe, qu'on peut déplacer
+   ou replier ensemble — et, en option, réviser comme un seul sujet regroupant
+   tout son contenu (plutôt que bloc par bloc) */
+export type CanvasFrameItem = {
+  kind: 'frame';
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  title: string;
+  collapsed?: boolean;
+  reviewEnabled?: boolean;
+  review?: ReviewState;
+  reviewLog?: ReviewLogEntry[];
+  weeklyChecklist?: ChecklistItem[];
+  weeklyChecklistResetAt?: number;
+};
+
+/* Forme simple (rectangle, ellipse) pour du schéma rapide */
+export type CanvasShapeItem = {
+  kind: 'shape';
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  shape: 'rect' | 'ellipse';
+  fill: string;
+};
+
+export type CanvasItem = CanvasTextItem | CanvasImageItem | CanvasFrameItem | CanvasShapeItem;
 
 export interface CanvasStroke {
   id: string;
@@ -48,9 +111,17 @@ export interface CanvasStroke {
   points: [number, number][];
 }
 
+/* Flèche reliant deux blocs du canvas (suit leurs déplacements) */
+export interface CanvasConnector {
+  id: string;
+  from: string;
+  to: string;
+}
+
 export interface NoteCanvas {
   items: CanvasItem[];
   strokes: CanvasStroke[];
+  connectors?: CanvasConnector[];
   pan?: { x: number; y: number };
   zoom?: number;
 }
@@ -78,4 +149,5 @@ export interface AppState {
 export type Route =
   | { view: 'home' }
   | { view: 'tree'; treeId: string }
-  | { view: 'note'; treeId: string; nodeId: string };
+  | { view: 'note'; treeId: string; nodeId: string }
+  | { view: 'review' };

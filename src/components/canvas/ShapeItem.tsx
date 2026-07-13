@@ -1,24 +1,19 @@
 import { useEffect } from 'react';
-import type { CanvasImageItem } from '../../types';
+import type { CanvasShapeItem } from '../../types';
 
 interface Props {
-  item: CanvasImageItem;
+  item: CanvasShapeItem;
   selected: boolean;
   zoom: number;
   onSelect: () => void;
-  onChange: (patch: Partial<CanvasImageItem>) => void;
+  onChange: (patch: Partial<CanvasShapeItem>) => void;
   onDelete: () => void;
-  linking?: boolean;
-  isLinkSource?: boolean;
-  onLinkPick?: () => void;
   onDragTo: (x: number, y: number) => void;
   onDragEnd: () => void;
 }
 
-export default function ImageItem({
-  item, selected, zoom, onSelect, onChange, onDelete, linking, isLinkSource, onLinkPick, onDragTo, onDragEnd,
-}: Props) {
-  /* Suppr quand image sélectionnée (focus hors champ texte) */
+export default function ShapeItem({ item, selected, zoom, onSelect, onChange, onDelete, onDragTo, onDragEnd }: Props) {
+  /* Suppr quand la forme est sélectionnée (focus hors champ texte) */
   useEffect(() => {
     if (!selected) return;
     const onKey = (e: KeyboardEvent) => {
@@ -35,7 +30,6 @@ export default function ImageItem({
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
     e.stopPropagation();
-    if (linking) { onLinkPick?.(); return; }
     onSelect();
     const startX = e.clientX, startY = e.clientY;
     const origin = { x: item.x, y: item.y };
@@ -54,21 +48,16 @@ export default function ImageItem({
     window.addEventListener('mouseup', up);
   };
 
-  /* Resize avec respect du ratio depuis le coin bas-droite */
+  /* Redim libre (largeur/hauteur indépendantes) depuis le coin bas-droit */
   const startResize = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
     e.stopPropagation();
     e.preventDefault();
     const startX = e.clientX, startY = e.clientY;
     const startW = item.w, startH = item.h;
-    const ratio = startH / startW;
     const move = (ev: MouseEvent) => {
-      const dx = (ev.clientX - startX) / zoom;
-      const dy = (ev.clientY - startY) / zoom;
-      /* On suit la plus grande variation pour rester fluide */
-      const delta = Math.abs(dx) > Math.abs(dy) ? dx : dy / ratio;
-      const w = Math.max(40, startW + delta);
-      const h = Math.max(40, w * ratio);
+      const w = Math.max(30, startW + (ev.clientX - startX) / zoom);
+      const h = Math.max(30, startH + (ev.clientY - startY) / zoom);
       onChange({ w, h });
     };
     const up = () => {
@@ -82,20 +71,20 @@ export default function ImageItem({
   return (
     <div
       data-item-id={item.id}
-      className={`canvas-image${selected ? ' selected' : ''}${isLinkSource ? ' link-source' : ''}`}
+      className={`canvas-shape canvas-shape-${item.shape}${selected ? ' selected' : ''}`}
       style={{
         position: 'absolute',
         left: item.x,
         top: item.y,
         width: item.w,
         height: item.h,
+        background: item.fill,
       }}
       onMouseDown={handleMouseDown}
     >
-      <img src={item.src} alt={item.alt ?? ''} draggable={false} />
       {selected && (
         <span
-          className="canvas-image-resize"
+          className="canvas-shape-resize"
           onMouseDown={startResize}
           style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'bottom right' }}
           title="Redimensionner"

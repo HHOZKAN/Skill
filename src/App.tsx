@@ -4,6 +4,7 @@ import Starfield from './components/Starfield';
 import HomeGalaxy from './components/HomeGalaxy';
 import ConstellationView from './components/ConstellationView';
 import NotesPage from './components/NotesPage';
+import ReviewPage from './components/ReviewPage';
 import { useStore } from './store/useStore';
 import { loadFromSupabase } from './store/useStore';
 import { useRoute } from './hooks/useRoute';
@@ -71,6 +72,7 @@ export default function App() {
               onRenameTree={(id, name) => renameTree(id, name)}
               onMoveTree={(id, gx, gy) => moveTree(id, gx, gy)}
               onDelete={(id) => deleteTree(id)}
+              onOpenReview={() => navigate({ view: 'review' })}
             />
           </motion.div>
         )}
@@ -98,6 +100,15 @@ export default function App() {
           );
         })()}
 
+        {route.view === 'review' && (
+          <motion.div key="review" {...slide} style={{ position:'absolute',inset:0,zIndex:10 }}>
+            <ReviewPage
+              onBack={() => navigate({ view: 'home' })}
+              onOpenNote={(treeId, nodeId) => navigate({ view: 'note', treeId, nodeId })}
+            />
+          </motion.div>
+        )}
+
         {route.view === 'note' && (() => {
           const tree = treeById(route.treeId);
           const node = tree?.nodes.find((n) => n.id === route.nodeId);
@@ -110,6 +121,7 @@ export default function App() {
                 onBack={() => navigate({ view: 'tree', treeId: tree.id })}
                 onSave={(nodeId, data) => setNotes(tree.id, nodeId, data)}
                 onRename={(nodeId, name) => renameNode(tree.id, nodeId, name)}
+                onNavigateToNote={(tid, nid) => navigate({ view: 'note', treeId: tid, nodeId: nid })}
               />
             </motion.div>
           );
