@@ -1,10 +1,15 @@
-import { useMemo, useState, useRef, useEffect } from 'react';
+import { useMemo, useState, useRef, useEffect, type CSSProperties } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IX, IPlus, IMinus, IExpand } from './Icons';
 import type { Tree } from '../types';
 import { collectReviewCards } from '../lib/review';
 
 const CLUSTER_TARGET = 230;
+
+/* Geste souris sur la galaxie (pan de la vue / déplacement d'une constellation). */
+type Gesture =
+  | { type: 'pan'; vx: number; vy: number; startX: number; startY: number; moved: boolean }
+  | { type: 'dragtree'; id: string; gx: number; gy: number; startX: number; startY: number; moved: boolean };
 
 function clamp(v: number, a: number, b: number) { return Math.max(a, Math.min(b, v)); }
 function hashNum(id: string, mod: number) { return parseInt(id.replace(/\D/g,'').slice(-3) || '0', 10) % mod; }
@@ -63,7 +68,7 @@ export default function HomeGalaxy({ trees, onOpen, onCreate, onRenameTree, onMo
   const [renameVal, setRenameVal] = useState('');
   const [toDelete, setToDelete] = useState<Tree | null>(null);
   const [panning, setPanning] = useState(false);
-  const gesture = useRef<any>(null);
+  const gesture = useRef<Gesture | null>(null);
   const fitted = useRef(false);
   const nameRef = useRef<HTMLInputElement>(null);
 
@@ -239,7 +244,7 @@ export default function HomeGalaxy({ trees, onOpen, onCreate, onRenameTree, onMo
           {/* stars */}
           {clusters.flatMap((c) => c.stars.map((s) => (
             <div key={c.tree.id+s.id} className={`star ${s.state}${s.empty?' empty':''}`}
-              style={{ left:s.x, top:s.y, ['--tw' as any]:(3+hashNum(s.id,18)/6)+'s', ['--dl' as any]:(hashNum(s.id,40)/10)+'s', pointerEvents:'none' }}>
+              style={{ left:s.x, top:s.y, '--tw':(3+hashNum(s.id,18)/6)+'s', '--dl':(hashNum(s.id,40)/10)+'s', pointerEvents:'none' } as CSSProperties}>
               <span className="star-core" />
             </div>
           )))}
