@@ -2063,3 +2063,10 @@ svg.ic.sm { width: 14px; height: 14px; }
   background: linear-gradient(180deg, var(--gold-bright), var(--gold-dim));
   color: #1a1200; font-size: 14px; font-weight: 650; cursor: pointer;
 }
+
+/* fallback pendant le chargement paresseux d'une route (notes / révision) */
+.route-loading {
+  position: fixed; inset: 0; z-index: 40;
+  display: grid; place-items: center;
+  background: var(--bg-0);
+}

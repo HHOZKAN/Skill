@@ -7,14 +7,30 @@ import TaskItem from '@tiptap/extension-task-item';
 import Highlight from '@tiptap/extension-highlight';
 import { TextStyle, Color, FontSize } from '@tiptap/extension-text-style';
 import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
-import { createLowlight, common } from 'lowlight';
+import { createLowlight } from 'lowlight';
+import javascript from 'highlight.js/lib/languages/javascript';
+import typescript from 'highlight.js/lib/languages/typescript';
+import python from 'highlight.js/lib/languages/python';
+import bash from 'highlight.js/lib/languages/bash';
+import json from 'highlight.js/lib/languages/json';
+import xml from 'highlight.js/lib/languages/xml';
+import css from 'highlight.js/lib/languages/css';
+import sql from 'highlight.js/lib/languages/sql';
+import markdown from 'highlight.js/lib/languages/markdown';
+import rust from 'highlight.js/lib/languages/rust';
+import go from 'highlight.js/lib/languages/go';
+import java from 'highlight.js/lib/languages/java';
 import { Callout } from '../../lib/extensions/callout';
 import { SlashCommand } from '../../lib/extensions/slashCommand';
 import { NoteMention } from '../../lib/extensions/noteMention';
 import { extractYouTubeId, getUrlDomain, PACER_INFO } from '../../lib/canvas';
 import type { CanvasTextItem } from '../../types';
 
-const lowlight = createLowlight(common);
+/* Sélection ciblée de langages plutôt que le preset `common` (~37 langages) :
+   allège nettement le chunk de la page de notes. */
+const lowlight = createLowlight({
+  javascript, typescript, python, bash, json, xml, css, sql, markdown, rust, go, java,
+});
 const DRAG_THRESHOLD = 4;
 
 interface Props {
