@@ -1,5 +1,6 @@
 import type { NoteCanvas, NoteData, CanvasItem, PacerCode } from '../types';
 import type { JSONContent } from '@tiptap/react';
+import { uploadImage } from './images';
 
 export const EMPTY_DOC: JSONContent = { type: 'doc', content: [{ type: 'paragraph' }] };
 
@@ -87,12 +88,14 @@ export function fileToImageItem(
     const reader = new FileReader();
     reader.onerror = () => reject(reader.error);
     reader.onload = () => {
-      const src = reader.result as string;
+      const dataUrl = reader.result as string;
       const probe = new window.Image();
-      probe.onload = () => {
+      probe.onload = async () => {
         const scale = probe.naturalWidth > MAX_IMAGE_WIDTH ? MAX_IMAGE_WIDTH / probe.naturalWidth : 1;
         const w = Math.round(probe.naturalWidth * scale);
         const h = Math.round(probe.naturalHeight * scale);
+        /* Cloud si dispo (URL stockée en base) ; sinon repli base64 local. */
+        const uploaded = await uploadImage(file);
         resolve({
           kind: 'image',
           id: newId('img'),
@@ -100,12 +103,12 @@ export function fileToImageItem(
           y: position.y,
           w,
           h,
-          src,
+          src: uploaded ?? dataUrl,
           alt: file.name,
         });
       };
       probe.onerror = () => reject(new Error('image-decode-failed'));
-      probe.src = src;
+      probe.src = dataUrl;
     };
     reader.readAsDataURL(file);
   });

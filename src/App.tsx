@@ -1,15 +1,17 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Starfield from './components/Starfield';
 import HomeGalaxy from './components/HomeGalaxy';
 import ConstellationView from './components/ConstellationView';
-import NotesPage from './components/NotesPage';
-import ReviewPage from './components/ReviewPage';
+import AuthGate from './components/AuthGate';
 import { useStore } from './store/useStore';
-import { loadFromSupabase } from './store/useStore';
 import { useRoute } from './hooks/useRoute';
-import { hasSupabase } from './lib/supabase';
-import { ICloud } from './components/Icons';
+
+/* Chargées à la demande : la page de notes embarque tout Tiptap + la
+   coloration syntaxique (lourd), inutile tant qu'on n'ouvre pas une note.
+   L'accueil (galaxie) démarre ainsi avec un bundle minimal. */
+const NotesPage = lazy(() => import('./components/NotesPage'));
+const ReviewPage = lazy(() => import('./components/ReviewPage'));
 
 const slide = {
   initial: { opacity: 0, x: 32 },
@@ -34,9 +36,6 @@ export default function App() {
   const deleteLink  = useStore((s) => s.deleteLink);
   const setNotes    = useStore((s) => s.setNotes);
 
-  /* charge depuis Supabase si configuré */
-  useEffect(() => { loadFromSupabase(); }, []);
-
   /* validation de route (arbre supprimé → home) */
   useEffect(() => {
     const treeById = (id: string) => trees.find((t) => t.id === id);
@@ -52,16 +51,10 @@ export default function App() {
   const treeById = (id: string) => trees.find((t) => t.id === id);
 
   return (
-    <>
+    <AuthGate>
       <Starfield density={0.00006} />
 
-      {/* badge sync cloud */}
-      {hasSupabase && (
-        <div style={{ position:'fixed', bottom:22, right:22, zIndex:50, display:'flex', alignItems:'center', gap:8, padding:'7px 14px', borderRadius:99, background:'rgba(20,28,54,0.7)', border:'1px solid rgba(180,200,240,0.16)', backdropFilter:'blur(8px)', fontSize:12, color:'oklch(0.7 0.028 252)', letterSpacing:'0.04em' }}>
-          <ICloud size={13}/> sync activée
-        </div>
-      )}
-
+      <Suspense fallback={<div className="route-loading"><div className="auth-spinner" /></div>}>
       <AnimatePresence mode="wait">
         {route.view === 'home' && (
           <motion.div key="home" {...slide} style={{ position:'absolute',inset:0,zIndex:10 }}>
@@ -127,6 +120,7 @@ export default function App() {
           );
         })()}
       </AnimatePresence>
-    </>
+      </Suspense>
+    </AuthGate>
   );
 }

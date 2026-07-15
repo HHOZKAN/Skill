@@ -4,6 +4,7 @@ import type { Tree, ConstellationNode, NoteData } from '../types';
 import { uid } from '../lib/uid';
 import { seedTrees } from '../lib/seed';
 import { supabase } from '../lib/supabase';
+import { isDataUrl, uploadDataUrl } from '../lib/images';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                               */
@@ -32,7 +33,7 @@ interface StoreState {
   setNotes: (treeId: string, nodeId: string, data: NoteData) => void;
 
   // Sync
-  syncToSupabase: () => Promise<void>;
+  syncToSupabase: () => void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -127,14 +128,8 @@ export const useStore = create<StoreState>()(
         get().syncToSupabase();
       },
 
-      /* ---- Supabase sync (upsert full state) ---- */
-      syncToSupabase: async () => {
-        if (!supabase) return;
-        const { trees } = get();
-        await supabase
-          .from('constellations_state')
-          .upsert({ id: 'default', trees, updated_at: new Date().toISOString() });
-      },
+      /* ---- Supabase sync : planifie un envoi débouncé (voir scheduleSync) ---- */
+      syncToSupabase: () => scheduleSync(get),
     }),
     {
       name: 'constellations.v2',
@@ -147,15 +142,111 @@ export const useStore = create<StoreState>()(
   )
 );
 
-/* ---- Load from Supabase on boot (if configured) ---- */
+/* ------------------------------------------------------------------ */
+/*  Synchronisation cloud (par utilisateur, débouncée)                  */
+/* ------------------------------------------------------------------ */
+const SYNC_DEBOUNCE_MS = 1200;
+let syncTimer: ReturnType<typeof setTimeout> | null = null;
+
+async function currentUserId(): Promise<string | null> {
+  if (!supabase) return null;
+  const { data } = await supabase.auth.getUser();
+  return data.user?.id ?? null;
+}
+
+/* Upsert la ligne de l'utilisateur courant. Silencieux hors ligne / non
+   connecté : la copie localStorage reste la source de secours. */
+async function pushState(trees: Tree[]) {
+  if (!supabase) return;
+  const userId = await currentUserId();
+  if (!userId) return;
+  await supabase.from('atlas_state').upsert({
+    user_id: userId,
+    trees,
+    updated_at: new Date().toISOString(),
+  });
+}
+
+function scheduleSync(get: () => StoreState) {
+  if (!supabase) return;
+  if (syncTimer) clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => {
+    syncTimer = null;
+    void pushState(get().trees);
+  }, SYNC_DEBOUNCE_MS);
+}
+
+/* Envoi immédiat de tout changement en attente (fermeture d'onglet…). */
+export function flushSync() {
+  if (!supabase || !syncTimer) return;
+  clearTimeout(syncTimer);
+  syncTimer = null;
+  void pushState(useStore.getState().trees);
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', flushSync);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushSync();
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/*  Chargement depuis Supabase (à appeler une fois connecté)            */
+/* ------------------------------------------------------------------ */
 export async function loadFromSupabase() {
   if (!supabase) return;
+  const userId = await currentUserId();
+  if (!userId) return;
+
   const { data } = await supabase
-    .from('constellations_state')
+    .from('atlas_state')
     .select('trees')
-    .eq('id', 'default')
-    .single();
-  if (data?.trees) {
-    useStore.setState({ trees: ensureGalaxyLayout(data.trees) });
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (data?.trees && Array.isArray(data.trees) && data.trees.length) {
+    // La base fait foi (synchro entre appareils).
+    useStore.setState({ trees: ensureGalaxyLayout(data.trees as Tree[]) });
+  } else {
+    // Base vide → on y pousse l'état local existant (première migration).
+    await pushState(useStore.getState().trees);
+  }
+
+  void migrateInlineImages();
+}
+
+/* Déplace vers Storage les images encore encodées en base64 dans les notes
+   (anciennes données), et remplace leur src par l'URL publique. */
+async function migrateInlineImages() {
+  if (!supabase) return;
+  const trees = useStore.getState().trees;
+  let changed = false;
+
+  const next = await Promise.all(
+    trees.map(async (t) => {
+      if (!t.notes) return t;
+      const notes: Tree['notes'] = { ...t.notes };
+      for (const nodeId of Object.keys(notes)) {
+        const canvas = notes[nodeId]?.canvas;
+        if (!canvas) continue;
+        const items = await Promise.all(
+          canvas.items.map(async (it) => {
+            if (it.kind === 'image' && isDataUrl(it.src)) {
+              const url = await uploadDataUrl(it.src);
+              if (url) { changed = true; return { ...it, src: url }; }
+            }
+            return it;
+          }),
+        );
+        notes[nodeId] = { ...notes[nodeId], canvas: { ...canvas, items } };
+      }
+      return { ...t, notes };
+    }),
+  );
+
+  if (changed) {
+    useStore.setState({ trees: next });
+    void pushState(next);
   }
 }

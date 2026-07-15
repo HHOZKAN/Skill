@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, type CSSProperties } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IHome, IPlus, IMinus, ILink, IEdit, INote, ITrash, IRecenter } from './Icons';
 import { uid } from '../lib/uid';
@@ -6,6 +6,12 @@ import type { Tree, ConstellationNode } from '../types';
 
 const STATES = ['todo', 'doing', 'done'] as const;
 const STATE_LABEL = { todo: 'À commencer', doing: 'En cours', done: 'Maîtrisée' };
+
+/* Geste souris en cours sur la scène (pan / déplacement d'étoile / lien). */
+type Gesture =
+  | { type: 'pan'; viewX: number; viewY: number; startX: number; startY: number; moved: boolean }
+  | { type: 'dragnode'; id: string; nodeX: number; nodeY: number; startX: number; startY: number; moved: boolean }
+  | { type: 'connect'; id: string; startX: number; startY: number; moved: boolean };
 
 function clamp(v: number, a: number, b: number) { return Math.max(a, Math.min(b, v)); }
 
@@ -41,7 +47,7 @@ export default function ConstellationView(props: Props) {
   const [linkFrom, setLinkFrom] = useState<string | null>(null);
   const [temp, setTemp] = useState<{ fromId: string; x: number; y: number } | null>(null);
   const [panning, setPanning] = useState(false);
-  const gesture = useRef<any>(null);
+  const gesture = useRef<Gesture | null>(null);
   const fittedFor = useRef<string | null>(null);
   const renameInputRef = useRef<HTMLInputElement>(null);
 
@@ -196,7 +202,7 @@ export default function ConstellationView(props: Props) {
               <motion.div key={n.id}
                 className={`star ${n.state}${isSel?' selected':''}${dragging?' dragging':''}${linkMode?' link-target':''}${isLinkSrc?' selected':''}`}
                 data-node-id={n.id}
-                style={{ left:p.x, top:p.y, ['--tw' as any]:tw+'s', ['--dl' as any]:dl+'s' }}
+                style={{ left:p.x, top:p.y, '--tw':tw+'s', '--dl':dl+'s' } as CSSProperties}
                 onPointerDown={(e)=>onStarPointerDown(e,n)}
                 onDoubleClick={(e)=>onStarDoubleClick(e,n)}
                 layout={!dragging}
