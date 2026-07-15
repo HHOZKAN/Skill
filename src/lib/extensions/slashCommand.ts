@@ -20,30 +20,6 @@ export interface SlashItem {
   command: (props: { editor: Editor; range: Range }) => void;
 }
 
-function insertImage(editor: Editor, range: Range) {
-  editor.chain().focus().deleteRange(range).run();
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
-  input.onchange = () => {
-    const file = input.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const src = reader.result as string;
-      const probe = new window.Image();
-      probe.onload = () => {
-        const width = Math.min(probe.naturalWidth, 640);
-        editor.chain().focus().setImage({ src, width } as { src: string }).run();
-      };
-      probe.onerror = () => editor.chain().focus().setImage({ src }).run();
-      probe.src = src;
-    };
-    reader.readAsDataURL(file);
-  };
-  input.click();
-}
-
 export const SLASH_ITEMS: SlashItem[] = [
   {
     title: 'Texte', description: 'Paragraphe simple', icon: '¶',
@@ -104,11 +80,6 @@ export const SLASH_ITEMS: SlashItem[] = [
     title: 'Séparateur', description: 'Ligne horizontale', icon: '—',
     keywords: ['séparateur', 'separateur', 'divider', 'hr', 'ligne'],
     command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setHorizontalRule().run(),
-  },
-  {
-    title: 'Image', description: 'Importer une image', icon: '🖼',
-    keywords: ['image', 'photo', 'capture', 'img'],
-    command: ({ editor, range }) => insertImage(editor, range),
   },
   {
     title: 'Lier à une compétence', description: 'Référencer une autre note de l’atlas', icon: '◆',

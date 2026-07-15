@@ -2,7 +2,7 @@ import { useMemo, useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IX, IPlus, IMinus, IExpand } from './Icons';
 import type { Tree } from '../types';
-import { collectReviewCards, isDue } from '../lib/review';
+import { collectReviewCards } from '../lib/review';
 
 const CLUSTER_TARGET = 230;
 
@@ -48,7 +48,7 @@ interface Props {
 }
 
 export default function HomeGalaxy({ trees, onOpen, onCreate, onRenameTree, onMoveTree, onDelete, onOpenReview }: Props) {
-  const dueReviewCount = useMemo(() => collectReviewCards(trees).filter((c) => isDue(c)).length, [trees]);
+  const reviewCount = useMemo(() => collectReviewCards(trees).length, [trees]);
   const stageRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef({ x: 0, y: 0, scale: 1 });
   const [view, _setView] = useState({ x: 0, y: 0, scale: 1 });
@@ -199,9 +199,9 @@ export default function HomeGalaxy({ trees, onOpen, onCreate, onRenameTree, onMo
           <span className="sub">atlas des savoirs</span>
         </div>
         <div className="spacer" />
-        <button type="button" className="chip chip-btn" onClick={onOpenReview} title="Réviser les blocs Référence / Evidence">
+        <button type="button" className="chip chip-btn" onClick={onOpenReview} title="Parcourir les blocs Référence / Evidence">
           Mode révision
-          {dueReviewCount > 0 && <span className="chip-badge">{dueReviewCount}</span>}
+          {reviewCount > 0 && <span className="chip-badge">{reviewCount}</span>}
         </button>
         <div className="chip">{trees.length} constellation{trees.length !== 1 ? 's' : ''}</div>
       </div>

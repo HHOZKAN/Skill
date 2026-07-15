@@ -29,36 +29,11 @@ export type CanvasTextItem = {
   pacer?: PacerCode | null;
   autoWidth?: boolean;
   autoHeight?: boolean;
-  review?: ReviewState;
-  reviewLog?: ReviewLogEntry[];
-  weeklyChecklist?: ChecklistItem[];
-  weeklyChecklistResetAt?: number;
   content: JSONContent;
 };
 
 /* Méthode PACER : nature de l'information, pour choisir le bon traitement */
 export type PacerCode = 'P' | 'A' | 'C' | 'E' | 'R';
-
-/* Répétition espacée (simplifiée) des blocs Référence/Evidence */
-export interface ReviewState {
-  dueAt: number;
-  intervalDays: number;
-}
-
-/* Journal de révision : ce qu'on a pensé/compris ce jour-là, pas juste su/pas su */
-export interface ReviewLogEntry {
-  id: string;
-  date: number;
-  note: string;
-  remembered: boolean;
-}
-
-/* Entraînement hebdomadaire : coché pendant la semaine, se remet à zéro ensuite */
-export interface ChecklistItem {
-  id: string;
-  label: string;
-  checked: boolean;
-}
 
 export type CanvasImageItem = {
   kind: 'image';
@@ -84,10 +59,6 @@ export type CanvasFrameItem = {
   title: string;
   collapsed?: boolean;
   reviewEnabled?: boolean;
-  review?: ReviewState;
-  reviewLog?: ReviewLogEntry[];
-  weeklyChecklist?: ChecklistItem[];
-  weeklyChecklistResetAt?: number;
 };
 
 /* Forme simple (rectangle, ellipse) pour du schéma rapide */

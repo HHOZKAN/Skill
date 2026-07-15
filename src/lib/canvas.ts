@@ -1,7 +1,7 @@
 import type { NoteCanvas, NoteData, CanvasItem, PacerCode } from '../types';
 import type { JSONContent } from '@tiptap/react';
 
-export const EMPTY_DOC = { type: 'doc', content: [{ type: 'paragraph' }] };
+export const EMPTY_DOC: JSONContent = { type: 'doc', content: [{ type: 'paragraph' }] };
 
 export function newId(prefix = 'it'): string {
   return `${prefix}_${Math.random().toString(36).slice(2, 9)}`;

@@ -1,5 +1,5 @@
 import type { JSONContent } from '@tiptap/react';
-import type { ChecklistItem, PacerCode, ReviewLogEntry, ReviewState, Tree } from '../types';
+import type { PacerCode, Tree } from '../types';
 import { getOrMigrateCanvas } from './canvas';
 import { worldRectOf, isFullyInside } from './geometry';
 
@@ -12,24 +12,13 @@ export interface ReviewCard {
   itemKind: 'text' | 'frame';
   pacer?: PacerCode;
   text: string;
-  review?: ReviewState;
-  reviewLog: ReviewLogEntry[];
-  weeklyChecklist: ChecklistItem[];
-  weeklyChecklistResetAt?: number;
 }
 
 export interface ReviewDeck {
   treeId: string;
   treeName: string;
-  dueCount: number;
   totalCount: number;
 }
-
-const MIN_INTERVAL_DAYS = 1;
-const MAX_INTERVAL_DAYS = 60;
-const DAY_MS = 24 * 60 * 60 * 1000;
-export const SESSION_SIZE = 20;
-export const WEEK_MS = 7 * DAY_MS;
 
 function extractPlainText(content: JSONContent | undefined): string {
   if (!content) return '';
@@ -65,10 +54,6 @@ export function collectReviewCards(trees: Tree[]): ReviewCard[] {
           itemKind: 'text',
           pacer: it.pacer,
           text,
-          review: it.review,
-          reviewLog: it.reviewLog ?? [],
-          weeklyChecklist: it.weeklyChecklist ?? [],
-          weeklyChecklistResetAt: it.weeklyChecklistResetAt,
         });
       }
 
@@ -91,10 +76,6 @@ export function collectReviewCards(trees: Tree[]): ReviewCard[] {
           itemId: frame.id,
           itemKind: 'frame',
           text,
-          review: frame.review,
-          reviewLog: frame.reviewLog ?? [],
-          weeklyChecklist: frame.weeklyChecklist ?? [],
-          weeklyChecklistResetAt: frame.weeklyChecklistResetAt,
         });
       }
     }
@@ -102,32 +83,17 @@ export function collectReviewCards(trees: Tree[]): ReviewCard[] {
   return cards;
 }
 
-export function isDue(card: Pick<ReviewCard, 'review'>, now = Date.now()): boolean {
-  return !card.review || card.review.dueAt <= now;
-}
-
-/* Regroupe les cartes par constellation, pour choisir un « paquet » à réviser
-   plutôt que de tout mélanger — trié par nombre de cartes dues décroissant. */
+/* Regroupe les cartes par constellation, pour naviguer paquet par paquet
+   plutôt que de tout mélanger — trié par nombre de sujets décroissant. */
 export function groupByDeck(cards: ReviewCard[]): ReviewDeck[] {
   const byTree = new Map<string, ReviewDeck>();
   for (const c of cards) {
     let deck = byTree.get(c.treeId);
     if (!deck) {
-      deck = { treeId: c.treeId, treeName: c.treeName, dueCount: 0, totalCount: 0 };
+      deck = { treeId: c.treeId, treeName: c.treeName, totalCount: 0 };
       byTree.set(c.treeId, deck);
     }
     deck.totalCount += 1;
-    if (isDue(c)) deck.dueCount += 1;
   }
-  return Array.from(byTree.values()).sort((a, b) => b.dueCount - a.dueCount);
-}
-
-/* Répétition espacée simplifiée (façon SM-2 sans facteur de facilité) :
-   oublié → on revoit demain ; su → l'intervalle double (plafonné). */
-export function nextReviewState(current: ReviewState | undefined, remembered: boolean, now = Date.now()): ReviewState {
-  if (!remembered) {
-    return { intervalDays: MIN_INTERVAL_DAYS, dueAt: now + MIN_INTERVAL_DAYS * DAY_MS };
-  }
-  const intervalDays = Math.min(MAX_INTERVAL_DAYS, Math.max(MIN_INTERVAL_DAYS, (current?.intervalDays ?? 0) * 2 || MIN_INTERVAL_DAYS));
-  return { intervalDays, dueAt: now + intervalDays * DAY_MS };
+  return Array.from(byTree.values()).sort((a, b) => b.totalCount - a.totalCount);
 }
