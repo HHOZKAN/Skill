@@ -2004,6 +2004,16 @@ svg.ic.sm { width: 14px; height: 14px; }
   background: rgba(220, 60, 60, 0.1); border: 1px solid rgba(220, 60, 60, 0.25);
   border-radius: 9px; padding: 8px 10px;
 }
+.auth-fix { text-align: left; margin-top: 18px; }
+.auth-fix p { font-size: 12.5px; color: var(--ink-soft); line-height: 1.6; margin: 0 0 8px; }
+.auth-fix strong { color: var(--ink); }
+.auth-fix code {
+  display: inline-block; font-size: 12px; color: var(--gold);
+  background: rgba(6, 10, 22, 0.6); border: 1px solid var(--hairline-2);
+  border-radius: 7px; padding: 5px 8px; margin-bottom: 8px;
+  overflow-wrap: anywhere;
+}
+.auth-fix .auth-hint code { color: inherit; background: none; border: 0; padding: 0; margin: 0; }
 .auth-sent { color: var(--ink-soft); font-size: 14px; line-height: 1.6; }
 .auth-sent-emoji { font-size: 34px; margin-bottom: 10px; }
 .auth-sent strong { color: var(--ink); }

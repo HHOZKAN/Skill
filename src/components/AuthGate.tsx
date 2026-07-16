@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { configError } from '../lib/supabase';
 import { loadFromSupabase } from '../store/useStore';
 
 /* Contrôle l'accès quand la base cloud est configurée :
@@ -21,6 +22,8 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     }
   }, [status, session]);
 
+  if (configError) return <ConfigErrorScreen problem={configError} />;
+
   if (status === 'disabled' || status === 'signed-in') {
     return (
       <>
@@ -41,6 +44,31 @@ export default function AuthGate({ children }: { children: ReactNode }) {
   }
 
   return <LoginScreen onSubmit={signInWithEmail} />;
+}
+
+/* Sans ce écran, une variable d'environnement erronée se manifeste seulement
+   par un message brut de Supabase au moment d'envoyer le lien de connexion. */
+function ConfigErrorScreen({ problem }: { problem: string }) {
+  return (
+    <div className="auth-screen">
+      <div className="auth-card">
+        <div className="auth-logo">⚠</div>
+        <h1>Configuration incomplète</h1>
+        <p className="auth-sub">La connexion au cloud ne peut pas démarrer</p>
+
+        <div className="auth-error">{problem}</div>
+
+        <div className="auth-fix">
+          <p>Dans Supabase : <strong>Project Settings → Data API</strong>, copie le champ <strong>Project URL</strong>. Il a cette forme :</p>
+          <code>https://&lt;projet&gt;.supabase.co</code>
+          <p className="auth-hint">
+            Reporte-le dans les variables d'environnement de l'hébergeur, puis <strong>redéploie</strong> :
+            les variables <code>VITE_*</code> sont figées au moment du build.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function LoginScreen({ onSubmit }: { onSubmit: (email: string) => Promise<{ error: string | null }> }) {
