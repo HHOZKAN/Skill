@@ -11,8 +11,34 @@ export type AuthStatus =
 export interface AuthState {
   status: AuthStatus;
   session: Session | null;
+  authError: string | null;
   signInWithEmail: (email: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+}
+
+/* Un lien expiré ou déjà utilisé ne ramène pas de jeton mais une erreur dans
+   le fragment (#error=…&error_code=otp_expired&…). Sans ce décodage, l'app
+   retombait silencieusement sur l'écran de connexion, sans dire pourquoi.
+   Lecture pure (aucune mutation) : le nettoyage de l'URL se fait dans un effet,
+   sinon React la nettoierait dès la double-exécution du mode strict. */
+function readAuthErrorFromUrl(): string | null {
+  if (typeof window === 'undefined') return null;
+  const sources = [
+    window.location.hash.replace(/^#\/?/, ''),
+    window.location.search.replace(/^\?/, ''),
+  ];
+  for (const raw of sources) {
+    const params = new URLSearchParams(raw);
+    if (!params.get('error') && !params.get('error_description') && !params.get('error_code')) continue;
+    const code = params.get('error_code') ?? '';
+    const desc = params.get('error_description') ?? params.get('error') ?? '';
+    if (/expired/i.test(code) || /expired/i.test(desc)) {
+      return 'Ce lien de connexion a expiré. Demande-en un nouveau ci-dessous.';
+    }
+    const readable = decodeURIComponent(desc).replace(/\+/g, ' ').trim();
+    return readable || 'La connexion a échoué. Demande un nouveau lien.';
+  }
+  return null;
 }
 
 /* Gère la session Supabase (connexion par lien magique). Quand Supabase
@@ -21,6 +47,12 @@ export interface AuthState {
 export function useAuth(): AuthState {
   const [status, setStatus] = useState<AuthStatus>(supabase ? 'loading' : 'disabled');
   const [session, setSession] = useState<Session | null>(null);
+  const [authError] = useState<string | null>(readAuthErrorFromUrl);
+
+  // L'erreur captée, on efface le fragment pour qu'elle ne survive pas à un rechargement.
+  useEffect(() => {
+    if (authError) window.history.replaceState(null, '', window.location.pathname + '#/');
+  }, [authError]);
 
   useEffect(() => {
     if (!supabase) return;
@@ -49,5 +81,5 @@ export function useAuth(): AuthState {
     await supabase.auth.signOut();
   };
 
-  return { status, session, signInWithEmail, signOut };
+  return { status, session, authError, signInWithEmail, signOut };
 }

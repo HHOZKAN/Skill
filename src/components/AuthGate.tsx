@@ -8,7 +8,7 @@ import { loadFromSupabase } from '../store/useStore';
    - "signed-in" → charge les données de l'utilisateur puis affiche l'app ;
    - sinon → écran de connexion par lien magique. */
 export default function AuthGate({ children }: { children: ReactNode }) {
-  const { status, session, signInWithEmail, signOut } = useAuth();
+  const { status, session, authError, signInWithEmail, signOut } = useAuth();
   const loadedFor = useRef<string | null>(null);
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     );
   }
 
-  return <LoginScreen onSubmit={signInWithEmail} />;
+  return <LoginScreen onSubmit={signInWithEmail} initialError={authError} />;
 }
 
 /* Sans ce écran, une variable d'environnement erronée se manifeste seulement
@@ -71,10 +71,13 @@ function ConfigErrorScreen({ problem }: { problem: string }) {
   );
 }
 
-function LoginScreen({ onSubmit }: { onSubmit: (email: string) => Promise<{ error: string | null }> }) {
+function LoginScreen({ onSubmit, initialError }: {
+  onSubmit: (email: string) => Promise<{ error: string | null }>;
+  initialError?: string | null;
+}) {
   const [email, setEmail] = useState('');
   const [state, setState] = useState<'idle' | 'sending' | 'sent'>('idle');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError ?? null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
